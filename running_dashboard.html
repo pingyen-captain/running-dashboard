@@ -1,0 +1,1244 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🏃 跑步訓練 Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            color: #e2e8f0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-card .icon {
+            font-size: 2rem;
+            margin-bottom: 12px;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .stat-card .label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .stat-card.highlight {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+
+        /* Today's Training */
+        .today-training {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(234, 88, 12, 0.15));
+            border: 2px solid rgba(249, 115, 22, 0.4);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .today-training::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: linear-gradient(180deg, #f97316, #ea580c);
+        }
+
+        .today-training .date-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .today-training .date-header h2 {
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .today-training .date-badge {
+            background: rgba(249, 115, 22, 0.3);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: #fb923c;
+        }
+
+        .today-training .workout-main {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 30px;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .today-training .workout-main {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+        }
+
+        .today-training .workout-type {
+            background: linear-gradient(135deg, #f97316, #ea580c);
+            padding: 20px 30px;
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .today-training .workout-type .type-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .today-training .workout-type .type-icon {
+            font-size: 2rem;
+            margin-bottom: 8px;
+        }
+
+        .today-training .workout-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .today-training .detail-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px 20px;
+            border-radius: 12px;
+            min-width: 120px;
+        }
+
+        .today-training .detail-item .detail-label {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+
+        .today-training .detail-item .detail-value {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .today-training .rest-day {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .today-training .rest-day .rest-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .today-training .rest-day .rest-text {
+            font-size: 1.3rem;
+            color: #94a3b8;
+        }
+
+        .today-training .week-info {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 12px 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .today-training .week-info .week-label {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        .today-training .week-info .week-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fb923c;
+        }
+
+        /* Progress Section */
+        .progress-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .progress-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .progress-bar-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            height: 24px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 10px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: width 1s ease;
+        }
+
+        .progress-stats {
+            display: flex;
+            justify-content: space-between;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 900px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .chart-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: #e2e8f0;
+        }
+
+        /* Training Plan */
+        .training-plan {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .training-plan h2 {
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .week-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .week-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.2s;
+        }
+
+        .week-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+
+        .week-card h4 {
+            font-size: 1rem;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .week-card .badge {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 20px;
+            background: rgba(139, 92, 246, 0.2);
+            color: #a78bfa;
+        }
+
+        .workout-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+        }
+
+        .workout-item .day {
+            min-width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+
+        .workout-item .details {
+            flex: 1;
+        }
+
+        .workout-item .type {
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 3px;
+        }
+
+        .workout-item .desc {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        /* Goals Section */
+        .goals-section {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .goals-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        .goals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .goal-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .goal-card .current {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+
+        .goal-card .arrow {
+            font-size: 1.5rem;
+            margin: 8px 0;
+        }
+
+        .goal-card .target {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        .goal-card .label {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-top: 8px;
+        }
+
+        /* Race Goals */
+        .race-section {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(249, 115, 22, 0.1));
+            border: 1px solid rgba(249, 115, 22, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .race-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 25px;
+        }
+
+        .race-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .race-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .race-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(180deg, #f97316, #ef4444);
+        }
+
+        .race-card .date {
+            font-size: 0.85rem;
+            color: #f97316;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .race-card .race-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 15px;
+        }
+
+        .race-card .race-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .race-card .race-stat {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 12px;
+            border-radius: 10px;
+        }
+
+        .race-card .race-stat .stat-label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+
+        .race-card .race-stat .stat-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .race-card .countdown {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        .race-card .countdown .days {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #f97316;
+        }
+
+        .race-card .countdown .days-label {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+
+        /* Tips */
+        .tips-section {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+        }
+
+        .tips-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .tip-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+        }
+
+        .tip-item .icon {
+            font-size: 1.5rem;
+        }
+
+        .tip-item .text {
+            font-size: 0.95rem;
+            color: #cbd5e1;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🏃 跑步訓練 Dashboard</h1>
+            <p>2026 年度訓練數據分析與進步計劃</p>
+        </div>
+
+        <!-- Today's Training -->
+        <div class="today-training" id="todayTraining">
+            <div class="date-header">
+                <h2>📅 今日訓練</h2>
+                <span class="date-badge" id="todayDate"></span>
+            </div>
+            <div id="workoutContent">
+                <!-- 由 JavaScript 動態填入 -->
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="icon">🏃</div>
+                <div class="value">16</div>
+                <div class="label">總跑步次數</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">📏</div>
+                <div class="value">61.36 km</div>
+                <div class="label">累積里程</div>
+            </div>
+            <div class="stat-card">
+                <div class="icon">⚡</div>
+                <div class="value">6:52</div>
+                <div class="label">最佳配速 (min/km)</div>
+            </div>
+            <div class="stat-card highlight">
+                <div class="icon">🏆</div>
+                <div class="value">6.23 km</div>
+                <div class="label">最長距離</div>
+            </div>
+            <div class="stat-card highlight">
+                <div class="icon">📈</div>
+                <div class="value">+39%</div>
+                <div class="label">配速進步</div>
+            </div>
+        </div>
+
+        <!-- Progress Section -->
+        <div class="progress-section">
+            <h2>📊 2 月進度</h2>
+            <div class="progress-bar-container">
+                <div class="progress-bar" style="width: 10%;">10%</div>
+            </div>
+            <div class="progress-stats">
+                <span>目標：60 km / 月</span>
+                <span>已完成：6.03 km</span>
+                <span>剩餘：53.97 km</span>
+            </div>
+        </div>
+
+        <!-- January Summary -->
+        <div class="progress-section" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(34, 197, 94, 0.1)); border-color: rgba(16, 185, 129, 0.3);">
+            <h2>✅ 1 月總結</h2>
+            <div class="progress-bar-container">
+                <div class="progress-bar" style="width: 92%; background: linear-gradient(90deg, #10b981, #22c55e);">92%</div>
+            </div>
+            <div class="progress-stats">
+                <span>目標：60 km</span>
+                <span>完成：55.33 km</span>
+                <span>次數：15 次</span>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>📏 每次跑步距離</h3>
+                <div id="distanceChart"></div>
+            </div>
+            <div class="chart-card">
+                <h3>⚡ 配速趨勢 (越低越快)</h3>
+                <div id="paceChart"></div>
+            </div>
+            <div class="chart-card">
+                <h3>❤️ 心率變化</h3>
+                <div id="heartRateChart"></div>
+            </div>
+            <div class="chart-card">
+                <h3>📈 累積里程</h3>
+                <div id="cumulativeChart"></div>
+            </div>
+        </div>
+
+        <!-- Running Mechanics Charts -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>👟 步頻 (spm)</h3>
+                <div id="cadenceChart"></div>
+            </div>
+            <div class="chart-card">
+                <h3>📐 垂直振幅 (cm)</h3>
+                <div id="verticalOscillationChart"></div>
+            </div>
+            <div class="chart-card">
+                <h3>⏱️ 觸地時間 (ms)</h3>
+                <div id="groundContactChart"></div>
+            </div>
+            <div class="chart-card">
+                <h3>🦶 步幅長度 (m)</h3>
+                <div id="strideLengthChart"></div>
+            </div>
+        </div>
+
+        <!-- Goals -->
+        <div class="goals-section">
+            <h2>🎯 4 週後目標</h2>
+            <div class="goals-grid">
+                <div class="goal-card" style="border: 2px solid #10b981;">
+                    <div class="current">✅ 達成 5.12 km</div>
+                    <div class="arrow">🎉</div>
+                    <div class="target" style="color: #10b981;">5 km</div>
+                    <div class="label">單次長跑距離</div>
+                </div>
+                <div class="goal-card" style="border: 2px solid #10b981;">
+                    <div class="current">✅ 達成 6:52 min/km</div>
+                    <div class="arrow">🎉</div>
+                    <div class="target" style="color: #10b981;">7:00 min/km</div>
+                    <div class="label">5K 配速目標</div>
+                </div>
+                <div class="goal-card">
+                    <div class="current">目前 15 次/月</div>
+                    <div class="arrow">⬆️</div>
+                    <div class="target">16 次/月</div>
+                    <div class="label">跑步頻率 (94%)</div>
+                </div>
+                <div class="goal-card">
+                    <div class="current">目前 55.33 km</div>
+                    <div class="arrow">⬆️</div>
+                    <div class="target">60 km</div>
+                    <div class="label">月跑量目標 (92%)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Race Goals -->
+        <div class="race-section">
+            <h2>🏁 比賽目標</h2>
+            <div class="race-grid">
+                <div class="race-card">
+                    <div class="date">2026 年 3 月 21 日（五）</div>
+                    <div class="race-name">5K 馬拉松</div>
+                    <div class="race-stats">
+                        <div class="race-stat">
+                            <div class="stat-label">目標時間</div>
+                            <div class="stat-value">sub-32 分</div>
+                        </div>
+                        <div class="race-stat">
+                            <div class="stat-label">目標配速</div>
+                            <div class="stat-value">6:15-6:20</div>
+                        </div>
+                        <div class="race-stat">
+                            <div class="stat-label">目前 PB</div>
+                            <div class="stat-value">35:10</div>
+                        </div>
+                        <div class="race-stat">
+                            <div class="stat-label">需進步</div>
+                            <div class="stat-value">-3:10</div>
+                        </div>
+                    </div>
+                    <div class="countdown">
+                        <div class="days" id="countdown5k">52</div>
+                        <div class="days-label">天後比賽</div>
+                    </div>
+                </div>
+                <div class="race-card">
+                    <div class="date">2026 年 4 月中旬</div>
+                    <div class="race-name">10K 馬拉松</div>
+                    <div class="race-stats">
+                        <div class="race-stat">
+                            <div class="stat-label">目標時間</div>
+                            <div class="stat-value">70-75 分</div>
+                        </div>
+                        <div class="race-stat">
+                            <div class="stat-label">目標配速</div>
+                            <div class="stat-value">7:00-7:30</div>
+                        </div>
+                        <div class="race-stat">
+                            <div class="stat-label">最長距離</div>
+                            <div class="stat-value">6.23 km</div>
+                        </div>
+                        <div class="race-stat">
+                            <div class="stat-label">需增加</div>
+                            <div class="stat-value">+3.77 km</div>
+                        </div>
+                    </div>
+                    <div class="countdown">
+                        <div class="days" id="countdown10k">~75</div>
+                        <div class="days-label">天後比賽</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Training Plan -->
+        <div class="training-plan">
+            <h2>📋 4 週進步計劃</h2>
+            <div class="week-grid">
+                <div class="week-card">
+                    <h4>Week 1 <span class="badge">基礎週</span></h4>
+                    <div class="workout-item">
+                        <div class="day">週二</div>
+                        <div class="details">
+                            <div class="type">輕鬆跑</div>
+                            <div class="desc">3.5 km @ 10:00 min/km 配速</div>
+                        </div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day">週四</div>
+                        <div class="details">
+                            <div class="type">間歇訓練</div>
+                            <div class="desc">400m x 6 組，休息 90 秒</div>
+                        </div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day">週日</div>
+                        <div class="details">
+                            <div class="type">長跑</div>
+                            <div class="desc">4.5 km @ 9:30 min/km 配速</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="week-card">
+                    <h4>Week 2 <span class="badge">增量週</span></h4>
+                    <div class="workout-item">
+                        <div class="day">週二</div>
+                        <div class="details">
+                            <div class="type">輕鬆跑</div>
+                            <div class="desc">4 km @ 自然配速</div>
+                        </div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day">週四</div>
+                        <div class="details">
+                            <div class="type">節奏跑</div>
+                            <div class="desc">3 km @ 8:30 min/km 穩定配速</div>
+                        </div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day">週日</div>
+                        <div class="details">
+                            <div class="type">長跑</div>
+                            <div class="desc">5 km @ 9:00 min/km 配速</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="week-card">
+                    <h4>Week 3 <span class="badge">強度週</span></h4>
+                    <div class="workout-item">
+                        <div class="day">週二</div>
+                        <div class="details">
+                            <div class="type">輕鬆跑</div>
+                            <div class="desc">3.5 km 恢復跑</div>
+                        </div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day">週四</div>
+                        <div class="details">
+                            <div class="type">間歇訓練</div>
+                            <div class="desc">800m x 4 組，休息 2 分鐘</div>
+                        </div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day">週日</div>
+                        <div class="details">
+                            <div class="type">長跑挑戰</div>
+                            <div class="desc">5.5 km @ 目標配速 8:30</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="week-card">
+                    <h4>Week 4 <span class="badge">測試週</span></h4>
+                    <div class="workout-item">
+                        <div class="day">週二</div>
+                        <div class="details">
+                            <div class="type">輕鬆跑</div>
+                            <div class="desc">3 km 放鬆恢復</div>
+                        </div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day">週四</div>
+                        <div class="details">
+                            <div class="type">休息日</div>
+                            <div class="desc">拉伸或輕度交叉訓練</div>
+                        </div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day">週日</div>
+                        <div class="details">
+                            <div class="type">🏆 5K 測試</div>
+                            <div class="desc">全力跑 5 km，記錄成績！</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tips -->
+        <div class="tips-section">
+            <h2>💡 訓練建議</h2>
+            <div class="tips-grid">
+                <div class="tip-item">
+                    <div class="icon">🗓️</div>
+                    <div class="text">每週跑 3-4 次，避免連續兩天高強度</div>
+                </div>
+                <div class="tip-item">
+                    <div class="icon">😴</div>
+                    <div class="text">確保 7-8 小時睡眠，恢復很重要</div>
+                </div>
+                <div class="tip-item">
+                    <div class="icon">🍎</div>
+                    <div class="text">跑後 30 分鐘內補充蛋白質和碳水</div>
+                </div>
+                <div class="tip-item">
+                    <div class="icon">💧</div>
+                    <div class="text">跑前 2 小時喝 500ml 水</div>
+                </div>
+                <div class="tip-item">
+                    <div class="icon">🦵</div>
+                    <div class="text">跑後拉伸 10-15 分鐘防止受傷</div>
+                </div>
+                <div class="tip-item">
+                    <div class="icon">📱</div>
+                    <div class="text">用 Apple Watch 監控心率區間</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>數據來源：Apple Health | 最後更新：2026-02-02</p>
+        </div>
+    </div>
+
+    <script>
+        // 數據
+        const dates = ['01/04', '01/07', '01/12', '01/13', '01/14', '01/15', '01/19', '01/20', '01/21', '01/22', '01/24', '01/26', '01/27', '01/28', '01/30', '02/02'];
+        const distances = [3.97, 1.46, 1.81, 3.20, 3.23, 3.42, 3.39, 3.61, 3.39, 3.43, 3.86, 4.10, 5.07, 5.12, 6.23, 6.03];
+        const paces = [10.76, 11.14, 12.30, 10.76, 9.98, 9.46, 8.86, 8.63, 9.33, 8.76, 8.26, 7.54, 7.37, 6.87, 8.82, 7.18];
+        const avgHr = [133, 100, 127, 125, 132, 133, 137, 135, 137, 144, 150, 153, 156, 164, 151, 161];
+        const maxHr = [163, 128, 152, 155, 159, 157, 162, 159, 162, 167, 172, 175, 170, 174, 163, 168];
+
+        // 跑步力學數據 (近期有記錄的)
+        const mechanicsDates = ['01/04', '01/12', '01/13', '01/14', '01/15', '01/19', '01/20', '01/21', '01/22', '01/24', '01/26', '01/27', '01/28', '01/30', '02/02'];
+        const cadence = [127, 111, 119, 123, 129, 127, 128, 147, 149, 151, 159, 162, 163, 140, 164];           // 步頻 spm
+        const verticalOsc = [10.0, 10.2, 10.1, 9.8, 9.5, 9.4, 9.5, 9.5, 9.5, 9.7, 9.7, 9.6, 9.7, 9.8, 9.3];   // 垂直振幅 cm
+        const groundContact = [295, 320, 284, 267, 253, 232, 243, 294, 304, 299, 276, 265, 251, 278, 273];    // 觸地時間 ms
+        const strideLength = [0.7, 0.7, 0.8, 0.8, 0.8, 0.9, 0.9, 0.8, 0.7, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8];     // 步幅長度 m
+
+        // 累積距離
+        let cumulative = [];
+        let sum = 0;
+        distances.forEach(d => {
+            sum += d;
+            cumulative.push(sum);
+        });
+
+        const chartConfig = {
+            displayModeBar: false,
+            responsive: true
+        };
+
+        const darkLayout = {
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { color: '#94a3b8' },
+            margin: { t: 20, r: 20, b: 40, l: 50 },
+            xaxis: {
+                gridcolor: 'rgba(255,255,255,0.05)',
+                linecolor: 'rgba(255,255,255,0.1)'
+            },
+            yaxis: {
+                gridcolor: 'rgba(255,255,255,0.05)',
+                linecolor: 'rgba(255,255,255,0.1)'
+            },
+            hoverlabel: {
+                bgcolor: '#1e293b',
+                bordercolor: '#3b82f6',
+                font: { color: '#fff' }
+            }
+        };
+
+        // 距離圖
+        Plotly.newPlot('distanceChart', [{
+            x: dates,
+            y: distances,
+            type: 'bar',
+            marker: {
+                color: distances.map((d, i) => i === distances.length - 1 ? '#10b981' : '#3b82f6'),
+                borderRadius: 8
+            },
+            hovertemplate: '%{x}<br>距離: %{y:.2f} km<extra></extra>'
+        }], {...darkLayout, height: 250}, chartConfig);
+
+        // 配速圖
+        Plotly.newPlot('paceChart', [{
+            x: dates,
+            y: paces,
+            type: 'scatter',
+            mode: 'lines+markers',
+            fill: 'tozeroy',
+            fillcolor: 'rgba(16, 185, 129, 0.2)',
+            line: { color: '#10b981', width: 3 },
+            marker: { size: 8, color: '#10b981' },
+            hovertemplate: '%{x}<br>配速: %{y:.2f} min/km<extra></extra>'
+        }], {...darkLayout, height: 250, yaxis: {...darkLayout.yaxis, autorange: 'reversed'}}, chartConfig);
+
+        // 心率圖
+        Plotly.newPlot('heartRateChart', [
+            {
+                x: dates,
+                y: avgHr,
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: '平均心率',
+                fill: 'tozeroy',
+                fillcolor: 'rgba(239, 68, 68, 0.2)',
+                line: { color: '#ef4444', width: 2 },
+                marker: { size: 6 },
+                hovertemplate: '%{x}<br>平均: %{y} bpm<extra></extra>'
+            },
+            {
+                x: dates,
+                y: maxHr,
+                type: 'scatter',
+                mode: 'lines+markers',
+                name: '最高心率',
+                line: { color: '#f97316', width: 1, dash: 'dash' },
+                marker: { size: 4, symbol: 'square' },
+                hovertemplate: '%{x}<br>最高: %{y} bpm<extra></extra>'
+            }
+        ], {...darkLayout, height: 250, showlegend: true, legend: {x: 0, y: 1.1, orientation: 'h'}}, chartConfig);
+
+        // 累積里程
+        Plotly.newPlot('cumulativeChart', [{
+            x: dates,
+            y: cumulative,
+            type: 'scatter',
+            mode: 'lines+markers',
+            fill: 'tozeroy',
+            fillcolor: 'rgba(139, 92, 246, 0.3)',
+            line: { color: '#8b5cf6', width: 3 },
+            marker: { size: 8, color: '#8b5cf6' },
+            hovertemplate: '%{x}<br>累積: %{y:.1f} km<extra></extra>'
+        }], {...darkLayout, height: 250}, chartConfig);
+
+        // 步頻圖
+        Plotly.newPlot('cadenceChart', [{
+            x: mechanicsDates,
+            y: cadence,
+            type: 'bar',
+            marker: { color: '#06b6d4' },
+            hovertemplate: '%{x}<br>步頻: %{y} spm<extra></extra>'
+        }], {...darkLayout, height: 250}, chartConfig);
+
+        // 垂直振幅圖
+        Plotly.newPlot('verticalOscillationChart', [{
+            x: mechanicsDates,
+            y: verticalOsc,
+            type: 'scatter',
+            mode: 'lines+markers',
+            line: { color: '#f59e0b', width: 3 },
+            marker: { size: 10, color: '#f59e0b' },
+            connectgaps: true,
+            hovertemplate: '%{x}<br>垂直振幅: %{y} cm<extra></extra>'
+        }], {...darkLayout, height: 250}, chartConfig);
+
+        // 觸地時間圖
+        Plotly.newPlot('groundContactChart', [{
+            x: mechanicsDates,
+            y: groundContact,
+            type: 'scatter',
+            mode: 'lines+markers',
+            line: { color: '#ec4899', width: 3 },
+            marker: { size: 10, color: '#ec4899' },
+            connectgaps: true,
+            hovertemplate: '%{x}<br>觸地時間: %{y} ms<extra></extra>'
+        }], {...darkLayout, height: 250}, chartConfig);
+
+        // 步幅長度圖
+        Plotly.newPlot('strideLengthChart', [{
+            x: mechanicsDates,
+            y: strideLength,
+            type: 'scatter',
+            mode: 'lines+markers',
+            line: { color: '#84cc16', width: 3 },
+            marker: { size: 10, color: '#84cc16' },
+            connectgaps: true,
+            hovertemplate: '%{x}<br>步幅: %{y} m<extra></extra>'
+        }], {...darkLayout, height: 250}, chartConfig);
+
+        // 進度條動畫
+        setTimeout(() => {
+            document.querySelector('.progress-bar').style.width = '10%';
+        }, 500);
+
+        // 比賽倒數計時
+        function updateCountdown() {
+            const today = new Date();
+            const race5k = new Date('2026-03-21');
+            const race10k = new Date('2026-04-15');
+
+            const days5k = Math.ceil((race5k - today) / (1000 * 60 * 60 * 24));
+            const days10k = Math.ceil((race10k - today) / (1000 * 60 * 60 * 24));
+
+            document.getElementById('countdown5k').textContent = days5k;
+            document.getElementById('countdown10k').textContent = days10k;
+        }
+        updateCountdown();
+
+        // 訓練計劃數據 (2/3 - 3/21)
+        const trainingSchedule = {
+            // Week 1: 基礎期 (2/3-2/9)
+            '2026-02-03': { week: 'Week 1 基礎期', type: '輕鬆跑', icon: '🏃', distance: '4 km', pace: '8:30-9:00', hr: '< 140' },
+            '2026-02-04': { week: 'Week 1 基礎期', type: '輕鬆跑', icon: '🏃', distance: '5 km', pace: '8:00-8:30', hr: '< 145' },
+            '2026-02-05': { week: 'Week 1 基礎期', type: '輕鬆跑', icon: '🏃', distance: '4 km', pace: '8:30-9:00', hr: '< 140' },
+            '2026-02-06': { week: 'Week 1 基礎期', type: '節奏跑', icon: '⚡', distance: '4 km', pace: '7:30 (中間2km)', hr: '150-160' },
+            '2026-02-07': { week: 'Week 1 基礎期', type: '休息日', icon: '😴', rest: true },
+            '2026-02-08': { week: 'Week 1 基礎期', type: '長跑', icon: '🏔️', distance: '6 km', pace: '8:00-8:30', hr: '< 150' },
+            '2026-02-09': { week: 'Week 1 基礎期', type: '輕鬆跑', icon: '🏃', distance: '3 km', pace: '9:00', hr: '< 135' },
+
+            // Week 2: 基礎期 (2/10-2/16)
+            '2026-02-10': { week: 'Week 2 基礎期', type: '輕鬆跑', icon: '🏃', distance: '5 km', pace: '8:00-8:30', hr: '< 145' },
+            '2026-02-11': { week: 'Week 2 基礎期', type: '間歇訓練', icon: '🔥', distance: '5 km', pace: '400m x 6，休90秒', hr: '165-175' },
+            '2026-02-12': { week: 'Week 2 基礎期', type: '輕鬆跑', icon: '🏃', distance: '4 km', pace: '8:30', hr: '< 140' },
+            '2026-02-13': { week: 'Week 2 基礎期', type: '節奏跑', icon: '⚡', distance: '5 km', pace: '中間3km @ 7:15', hr: '155-165' },
+            '2026-02-14': { week: 'Week 2 基礎期', type: '休息日', icon: '😴', rest: true },
+            '2026-02-15': { week: 'Week 2 基礎期', type: '長跑', icon: '🏔️', distance: '7 km', pace: '8:00-8:30', hr: '< 150' },
+            '2026-02-16': { week: 'Week 2 基礎期', type: '輕鬆跑', icon: '🏃', distance: '4 km', pace: '8:30', hr: '< 140' },
+
+            // Week 3: 發展期 (2/17-2/23)
+            '2026-02-17': { week: 'Week 3 發展期', type: '輕鬆跑', icon: '🏃', distance: '5 km', pace: '8:00', hr: '< 145' },
+            '2026-02-18': { week: 'Week 3 發展期', type: '間歇訓練', icon: '🔥', distance: '6 km', pace: '600m x 5，休2分', hr: '170-180' },
+            '2026-02-19': { week: 'Week 3 發展期', type: '輕鬆跑', icon: '🏃', distance: '4 km', pace: '8:30', hr: '< 140' },
+            '2026-02-20': { week: 'Week 3 發展期', type: '節奏跑', icon: '⚡', distance: '6 km', pace: '中間4km @ 7:00', hr: '155-165' },
+            '2026-02-21': { week: 'Week 3 發展期', type: '休息日', icon: '😴', rest: true },
+            '2026-02-22': { week: 'Week 3 發展期', type: '長跑', icon: '🏔️', distance: '8 km', pace: '7:45-8:00', hr: '< 155' },
+            '2026-02-23': { week: 'Week 3 發展期', type: '輕鬆跑', icon: '🏃', distance: '4 km', pace: '8:30', hr: '< 140' },
+
+            // Week 4: 發展期 (2/24-3/2)
+            '2026-02-24': { week: 'Week 4 發展期', type: '輕鬆跑', icon: '🏃', distance: '5 km', pace: '8:00', hr: '< 145' },
+            '2026-02-25': { week: 'Week 4 發展期', type: '間歇訓練', icon: '🔥', distance: '6 km', pace: '800m x 4，休2分', hr: '170-180' },
+            '2026-02-26': { week: 'Week 4 發展期', type: '輕鬆跑', icon: '🏃', distance: '5 km', pace: '8:00', hr: '< 145' },
+            '2026-02-27': { week: 'Week 4 發展期', type: '節奏跑', icon: '⚡', distance: '6 km', pace: '中間4km @ 6:45', hr: '160-170' },
+            '2026-02-28': { week: 'Week 4 發展期', type: '休息日', icon: '😴', rest: true },
+            '2026-03-01': { week: 'Week 4 發展期', type: '長跑', icon: '🏔️', distance: '9 km', pace: '7:30-7:45', hr: '< 155' },
+            '2026-03-02': { week: 'Week 4 發展期', type: '輕鬆跑', icon: '🏃', distance: '4 km', pace: '8:30', hr: '< 140' },
+
+            // Week 5: 強化期 (3/3-3/9)
+            '2026-03-03': { week: 'Week 5 強化期', type: '輕鬆跑', icon: '🏃', distance: '5 km', pace: '8:00', hr: '< 145' },
+            '2026-03-04': { week: 'Week 5 強化期', type: '比賽配速跑', icon: '🎯', distance: '6 km', pace: '1km熱身+4km@6:20+1km緩和', hr: '160-170' },
+            '2026-03-05': { week: 'Week 5 強化期', type: '輕鬆跑', icon: '🏃', distance: '4 km', pace: '8:30', hr: '< 140' },
+            '2026-03-06': { week: 'Week 5 強化期', type: '間歇訓練', icon: '🔥', distance: '5 km', pace: '1000m x 3，休3分', hr: '170-180' },
+            '2026-03-07': { week: 'Week 5 強化期', type: '休息日', icon: '😴', rest: true },
+            '2026-03-08': { week: 'Week 5 強化期', type: '長跑', icon: '🏔️', distance: '10 km', pace: '7:30-7:45', hr: '< 155', milestone: '首次 10K！' },
+            '2026-03-09': { week: 'Week 5 強化期', type: '輕鬆跑', icon: '🏃', distance: '4 km', pace: '8:30', hr: '< 140' },
+
+            // Week 6: 強化期 (3/10-3/16)
+            '2026-03-10': { week: 'Week 6 強化期', type: '輕鬆跑', icon: '🏃', distance: '5 km', pace: '8:00', hr: '< 145' },
+            '2026-03-11': { week: 'Week 6 強化期', type: '間歇訓練', icon: '🔥', distance: '5 km', pace: '800m x 5，休2分', hr: '170-180' },
+            '2026-03-12': { week: 'Week 6 強化期', type: '輕鬆跑', icon: '🏃', distance: '4 km', pace: '8:30', hr: '< 140' },
+            '2026-03-13': { week: 'Week 6 強化期', type: '比賽配速跑', icon: '🎯', distance: '5 km', pace: '全程 @ 6:15-6:20', hr: '160-170' },
+            '2026-03-14': { week: 'Week 6 強化期', type: '休息日', icon: '😴', rest: true },
+            '2026-03-15': { week: 'Week 6 強化期', type: '長跑', icon: '🏔️', distance: '8 km', pace: '7:45', hr: '< 150' },
+            '2026-03-16': { week: 'Week 6 強化期', type: '輕鬆跑', icon: '🏃', distance: '3 km', pace: '9:00', hr: '< 135' },
+
+            // Week 7: 減量週 (3/17-3/21)
+            '2026-03-17': { week: 'Week 7 減量週', type: '輕鬆跑', icon: '🏃', distance: '4 km', pace: '8:00', hr: '< 145' },
+            '2026-03-18': { week: 'Week 7 減量週', type: '短間歇', icon: '⚡', distance: '3 km', pace: '200m x 4，輕快跑', hr: '150-160', note: '喚醒腿部' },
+            '2026-03-19': { week: 'Week 7 減量週', type: '輕鬆跑', icon: '🏃', distance: '3 km', pace: '8:30', hr: '< 140' },
+            '2026-03-20': { week: 'Week 7 減量週', type: '休息日', icon: '😴', rest: true, note: '賽前休息' },
+            '2026-03-21': { week: '比賽日', type: '5K 比賽', icon: '🏁', distance: '5 km', pace: '目標 6:15-6:20', hr: '全力', race: true, milestone: 'sub-32！' }
+        };
+
+        // 顯示今日訓練
+        function displayTodayTraining() {
+            const today = new Date();
+            const dateStr = today.toISOString().split('T')[0];
+            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+            const weekday = weekdays[today.getDay()];
+            const month = today.getMonth() + 1;
+            const day = today.getDate();
+
+            document.getElementById('todayDate').textContent = `${month}/${day} (${weekday})`;
+
+            const workout = trainingSchedule[dateStr];
+            const container = document.getElementById('workoutContent');
+
+            if (!workout) {
+                container.innerHTML = `
+                    <div class="rest-day">
+                        <div class="rest-icon">📋</div>
+                        <div class="rest-text">今日無排定訓練</div>
+                        <div style="color: #64748b; margin-top: 10px; font-size: 0.9rem;">可自主安排輕鬆跑或休息</div>
+                    </div>
+                `;
+                return;
+            }
+
+            if (workout.rest) {
+                container.innerHTML = `
+                    <div class="workout-main" style="justify-content: center;">
+                        <div class="workout-type" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
+                            <div class="type-icon">${workout.icon}</div>
+                            <div class="type-name">${workout.type}</div>
+                        </div>
+                        <div class="week-info">
+                            <div class="week-label">訓練週期</div>
+                            <div class="week-value">${workout.week}</div>
+                            ${workout.note ? `<div style="margin-top: 8px; color: #94a3b8; font-size: 0.85rem;">${workout.note}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            let raceStyle = workout.race ? 'background: linear-gradient(135deg, #dc2626, #f97316);' : '';
+            let milestoneHtml = workout.milestone ? `<div style="margin-top: 15px; padding: 10px 15px; background: rgba(16, 185, 129, 0.2); border-radius: 8px; color: #10b981; font-weight: 600;">🎯 ${workout.milestone}</div>` : '';
+
+            container.innerHTML = `
+                <div class="workout-main">
+                    <div class="workout-type" style="${raceStyle}">
+                        <div class="type-icon">${workout.icon}</div>
+                        <div class="type-name">${workout.type}</div>
+                    </div>
+                    <div class="workout-details">
+                        <div class="detail-item">
+                            <div class="detail-label">距離</div>
+                            <div class="detail-value">${workout.distance}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">配速/內容</div>
+                            <div class="detail-value">${workout.pace}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">心率目標</div>
+                            <div class="detail-value">${workout.hr}</div>
+                        </div>
+                    </div>
+                    <div class="week-info">
+                        <div class="week-label">訓練週期</div>
+                        <div class="week-value">${workout.week}</div>
+                    </div>
+                </div>
+                ${milestoneHtml}
+            `;
+        }
+        displayTodayTraining();
+    </script>
+</body>
+</html>
