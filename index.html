@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🏃 跑步訓練 Dashboard</title>
+    <title>🏃 健康管理 Dashboard</title>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -222,6 +222,152 @@
             font-size: 1.1rem;
             font-weight: 600;
             color: #fb923c;
+        }
+
+        /* Today Timeline Tags */
+        .today-timeline {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 18px;
+        }
+
+        .today-timeline .time-tag {
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .today-timeline .time-tag.gym {
+            background: rgba(139, 92, 246, 0.2);
+            color: #a78bfa;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .today-timeline .time-tag.dev {
+            background: rgba(59, 130, 246, 0.1);
+            color: #60a5fa;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .today-timeline .time-tag.run {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+        }
+
+        .today-timeline .time-tag.rest-tag {
+            background: rgba(100, 116, 139, 0.15);
+            color: #94a3b8;
+            border: 1px solid rgba(100, 116, 139, 0.2);
+        }
+
+        .today-timeline .time-tag.race {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        /* Today Gym Card */
+        .today-gym {
+            background: rgba(139, 92, 246, 0.08);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 15px;
+        }
+
+        .today-gym h3 {
+            font-size: 1rem;
+            color: #a78bfa;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .today-gym .exercises {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 8px;
+        }
+
+        .today-gym .exercise-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 8px;
+            font-size: 0.85rem;
+        }
+
+        .today-gym .exercise-item .num {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: rgba(139, 92, 246, 0.3);
+            color: #c4b5fd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .today-gym .exercise-item .name {
+            color: #e2e8f0;
+        }
+
+        .today-gym .exercise-item .sets {
+            color: #94a3b8;
+            margin-left: auto;
+            white-space: nowrap;
+        }
+
+        /* Today Run Card */
+        .today-run {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 14px;
+            padding: 18px;
+        }
+
+        .today-run h3 {
+            font-size: 1rem;
+            color: #34d399;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .today-run .run-details {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .today-run .run-detail {
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 10px;
+        }
+
+        .today-run .run-detail .label {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-bottom: 3px;
+        }
+
+        .today-run .run-detail .value {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #fff;
         }
 
         /* Progress Section */
@@ -583,14 +729,14 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <h1>🏃 跑步訓練 Dashboard</h1>
-            <p>2026 年度訓練數據分析與進步計劃</p>
+            <h1>🏃 健康管理 Dashboard</h1>
+            <p>2026 年度健康數據 / 跑步訓練 / 健身課表 / 開發行程</p>
         </div>
 
         <!-- Today's Training -->
         <div class="today-training" id="todayTraining">
             <div class="date-header">
-                <h2>📅 今日訓練</h2>
+                <h2>📅 今日行程</h2>
                 <span class="date-badge" id="todayDate"></span>
             </div>
             <div id="workoutContent">
@@ -1048,6 +1194,274 @@
             </div>
         </div>
 
+        <!-- Health Check -->
+        <div class="progress-section" style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(249, 115, 22, 0.1)); border-color: rgba(239, 68, 68, 0.3);">
+            <h2>🩺 健檢紅燈區（2026/01/30）</h2>
+            <p style="color: #94a3b8; margin-bottom: 20px;">174.7 cm / 90.6 kg / 29 歲</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px;">
+                    <div style="font-size: 0.8rem; color: #f87171; margin-bottom: 4px;">BMI</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: #fff;">30.6</div>
+                    <div style="font-size: 0.75rem; color: #94a3b8;">正常 18.5-24</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px;">
+                    <div style="font-size: 0.8rem; color: #f87171; margin-bottom: 4px;">體脂肪率</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: #fff;">34.2%</div>
+                    <div style="font-size: 0.75rem; color: #94a3b8;">正常 15-25%</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px;">
+                    <div style="font-size: 0.8rem; color: #f87171; margin-bottom: 4px;">總膽固醇</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: #fff;">261</div>
+                    <div style="font-size: 0.75rem; color: #94a3b8;">正常 &lt;200</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px;">
+                    <div style="font-size: 0.8rem; color: #f87171; margin-bottom: 4px;">LDL 壞膽固醇</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: #fff;">188</div>
+                    <div style="font-size: 0.75rem; color: #94a3b8;">正常 &lt;130</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px;">
+                    <div style="font-size: 0.8rem; color: #f87171; margin-bottom: 4px;">GPT 肝指數</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: #fff;">53</div>
+                    <div style="font-size: 0.75rem; color: #94a3b8;">正常 4-44</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px;">
+                    <div style="font-size: 0.8rem; color: #fbbf24; margin-bottom: 4px;">Vitamin D</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: #fff;">29.8</div>
+                    <div style="font-size: 0.75rem; color: #94a3b8;">正常 30-100</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px;">
+                    <div style="font-size: 0.8rem; color: #f87171; margin-bottom: 4px;">hs-CRP 發炎</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: #fff;">3.70</div>
+                    <div style="font-size: 0.75rem; color: #94a3b8;">正常 &lt;0.35</div>
+                </div>
+                <div style="background: rgba(255,255,255,0.05); border-radius: 12px; padding: 16px;">
+                    <div style="font-size: 0.8rem; color: #34d399; margin-bottom: 4px;">血糖 / HbA1c</div>
+                    <div style="font-size: 1.5rem; font-weight: 700; color: #10b981;">87 / 5.4</div>
+                    <div style="font-size: 0.75rem; color: #94a3b8;">正常 ✓</div>
+                </div>
+            </div>
+            <p style="color: #94a3b8; margin-top: 20px; font-size: 0.9rem;">核心策略：<strong style="color: #f87171;">減脂</strong> → 膽固醇、GPT、CRP 跟著改善 | 下次複檢：4 月底</p>
+        </div>
+
+        <!-- Body Goals -->
+        <div class="goals-section">
+            <h2>🎯 體態目標（6 個月）</h2>
+            <div class="goals-grid">
+                <div class="goal-card">
+                    <div class="current">目前 90.6 kg</div>
+                    <div class="arrow">⬇️</div>
+                    <div class="target">78 kg</div>
+                    <div class="label">體重（-2 kg/月）</div>
+                </div>
+                <div class="goal-card">
+                    <div class="current">目前 34.2%</div>
+                    <div class="arrow">⬇️</div>
+                    <div class="target">22-25%</div>
+                    <div class="label">體脂肪率</div>
+                </div>
+                <div class="goal-card">
+                    <div class="current">目前 261</div>
+                    <div class="arrow">⬇️</div>
+                    <div class="target">&lt;200</div>
+                    <div class="label">總膽固醇</div>
+                </div>
+                <div class="goal-card">
+                    <div class="current">目前 53</div>
+                    <div class="arrow">⬇️</div>
+                    <div class="target">&lt;40</div>
+                    <div class="label">GPT 肝指數</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weekly Schedule -->
+        <div class="training-plan" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.08), rgba(99, 102, 241, 0.08)); border-color: rgba(99, 102, 241, 0.25);">
+            <h2>📅 週行程總覽</h2>
+            <p style="color: #94a3b8; margin-bottom: 20px;">早上健身 → 白天開發 → 晚上 9 點跑步</p>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <th style="padding: 10px; text-align: left; color: #94a3b8;">時段</th>
+                            <th style="padding: 10px; text-align: center; color: #94a3b8;">一</th>
+                            <th style="padding: 10px; text-align: center; color: #94a3b8;">二</th>
+                            <th style="padding: 10px; text-align: center; color: #94a3b8;">三</th>
+                            <th style="padding: 10px; text-align: center; color: #94a3b8;">四</th>
+                            <th style="padding: 10px; text-align: center; color: #94a3b8;">五</th>
+                            <th style="padding: 10px; text-align: center; color: #94a3b8;">六</th>
+                            <th style="padding: 10px; text-align: center; color: #94a3b8;">日</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <td style="padding: 10px; color: #94a3b8;">10:00</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(139,92,246,0.15); border-radius: 8px;">🏋️ Push</td>
+                            <td style="padding: 10px; text-align: center; color: #475569;">—</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(139,92,246,0.15); border-radius: 8px;">🏋️ Pull</td>
+                            <td style="padding: 10px; text-align: center; color: #475569;">—</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(139,92,246,0.15); border-radius: 8px;">🏋️ Legs</td>
+                            <td style="padding: 10px; text-align: center; color: #475569;">—</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(139,92,246,0.15); border-radius: 8px;">🏋️ 核心</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <td style="padding: 10px; color: #94a3b8;">12-18</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(59,130,246,0.1); border-radius: 8px;">💻</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(59,130,246,0.1); border-radius: 8px;">💻</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(59,130,246,0.1); border-radius: 8px;">💻</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(59,130,246,0.1); border-radius: 8px;">💻</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(59,130,246,0.1); border-radius: 8px;">💻</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(59,130,246,0.1); border-radius: 8px;">💻</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(59,130,246,0.1); border-radius: 8px;">💻</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                            <td style="padding: 10px; color: #94a3b8;">19-21</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(59,130,246,0.1); border-radius: 8px;">💻</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(59,130,246,0.1); border-radius: 8px;">💻</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(59,130,246,0.1); border-radius: 8px;">💻</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(59,130,246,0.1); border-radius: 8px;">💻</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(59,130,246,0.1); border-radius: 8px;">💻</td>
+                            <td style="padding: 10px; text-align: center; color: #fbbf24;">🎉</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(59,130,246,0.1); border-radius: 8px;">💻</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; color: #94a3b8;">21:00</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(16,185,129,0.15); border-radius: 8px;">🏃 輕鬆</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(16,185,129,0.15); border-radius: 8px;">🏃 輕鬆</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(239,68,68,0.15); border-radius: 8px;">🏃 間歇</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(16,185,129,0.15); border-radius: 8px;">🏃 輕鬆</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(249,115,22,0.15); border-radius: 8px;">🏃 節奏</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(139,92,246,0.15); border-radius: 8px;">🏃 長跑</td>
+                            <td style="padding: 10px; text-align: center; color: #64748b;">😴</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div style="display: flex; gap: 20px; margin-top: 15px; flex-wrap: wrap; font-size: 0.85rem; color: #94a3b8;">
+                <span>🏋️ 健身 4天</span>
+                <span>🏃 跑步 6天</span>
+                <span>💻 開發 ~8hr/天</span>
+                <span>😴 休跑 1天</span>
+            </div>
+        </div>
+
+        <!-- Gym Routine -->
+        <div class="training-plan">
+            <h2>🏋️ 健身課表（Push / Pull / Legs / 核心）</h2>
+            <div class="week-grid">
+                <div class="week-card">
+                    <h4>Push <span class="badge" style="background: rgba(239, 68, 68, 0.2); color: #f87171;">胸 / 肩 / 三頭</span></h4>
+                    <div class="workout-item">
+                        <div class="day" style="background: linear-gradient(135deg, #ef4444, #dc2626);">1</div>
+                        <div class="details"><div class="type">死蟲式</div><div class="desc">3 x 10（每邊）</div></div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day" style="background: linear-gradient(135deg, #ef4444, #dc2626);">2</div>
+                        <div class="details"><div class="type">啞鈴平板臥推</div><div class="desc">4 x 10</div></div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day" style="background: linear-gradient(135deg, #ef4444, #dc2626);">3</div>
+                        <div class="details"><div class="type">上斜啞鈴臥推</div><div class="desc">3 x 12</div></div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day" style="background: linear-gradient(135deg, #ef4444, #dc2626);">4</div>
+                        <div class="details"><div class="type">啞鈴肩推</div><div class="desc">3 x 10</div></div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day" style="background: linear-gradient(135deg, #ef4444, #dc2626);">5</div>
+                        <div class="details"><div class="type">側平舉</div><div class="desc">3 x 15（輕重量）</div></div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day" style="background: linear-gradient(135deg, #ef4444, #dc2626);">6</div>
+                        <div class="details"><div class="type">繩索下壓</div><div class="desc">3 x 12</div></div>
+                    </div>
+                </div>
+
+                <div class="week-card">
+                    <h4>Pull <span class="badge" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa;">背 / 二頭</span></h4>
+                    <div class="workout-item">
+                        <div class="day" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">1</div>
+                        <div class="details"><div class="type">鳥狗式</div><div class="desc">3 x 10（每邊）</div></div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">2</div>
+                        <div class="details"><div class="type">滑輪下拉 / 引體向上</div><div class="desc">4 x 10</div></div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">3</div>
+                        <div class="details"><div class="type">啞鈴單手划船</div><div class="desc">3 x 12（每邊）</div></div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">4</div>
+                        <div class="details"><div class="type">坐姿划船</div><div class="desc">3 x 12</div></div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">5</div>
+                        <div class="details"><div class="type">Face Pull</div><div class="desc">3 x 15</div></div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">6</div>
+                        <div class="details"><div class="type">啞鈴二頭彎舉</div><div class="desc">3 x 12</div></div>
+                    </div>
+                </div>
+
+                <div class="week-card">
+                    <h4>Legs <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">腿 / 臀</span></h4>
+                    <div class="workout-item">
+                        <div class="day" style="background: linear-gradient(135deg, #10b981, #059669);">1</div>
+                        <div class="details"><div class="type">鳥狗式</div><div class="desc">3 x 10（每邊）</div></div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day" style="background: linear-gradient(135deg, #10b981, #059669);">2</div>
+                        <div class="details"><div class="type">槓鈴深蹲</div><div class="desc">4 x 10</div></div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day" style="background: linear-gradient(135deg, #10b981, #059669);">3</div>
+                        <div class="details"><div class="type">羅馬尼亞硬舉</div><div class="desc">3 x 10</div></div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day" style="background: linear-gradient(135deg, #10b981, #059669);">4</div>
+                        <div class="details"><div class="type">保加利亞分腿蹲</div><div class="desc">3 x 10（每邊）</div></div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day" style="background: linear-gradient(135deg, #10b981, #059669);">5</div>
+                        <div class="details"><div class="type">腿推機</div><div class="desc">3 x 12</div></div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day" style="background: linear-gradient(135deg, #10b981, #059669);">6</div>
+                        <div class="details"><div class="type">站姿提踵</div><div class="desc">3 x 15</div></div>
+                    </div>
+                </div>
+
+                <div class="week-card">
+                    <h4>核心 <span class="badge" style="background: rgba(249, 115, 22, 0.2); color: #fb923c;">功能性</span></h4>
+                    <div class="workout-item">
+                        <div class="day" style="background: linear-gradient(135deg, #f97316, #ea580c);">1</div>
+                        <div class="details"><div class="type">死蟲式</div><div class="desc">3 x 10（每邊）</div></div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day" style="background: linear-gradient(135deg, #f97316, #ea580c);">2</div>
+                        <div class="details"><div class="type">鳥狗式</div><div class="desc">3 x 10（每邊）</div></div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day" style="background: linear-gradient(135deg, #f97316, #ea580c);">3</div>
+                        <div class="details"><div class="type">壺鈴擺盪</div><div class="desc">3 x 15</div></div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day" style="background: linear-gradient(135deg, #f97316, #ea580c);">4</div>
+                        <div class="details"><div class="type">農夫走路</div><div class="desc">3 x 30m</div></div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day" style="background: linear-gradient(135deg, #f97316, #ea580c);">5</div>
+                        <div class="details"><div class="type">TRX 划船</div><div class="desc">3 x 12</div></div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day" style="background: linear-gradient(135deg, #f97316, #ea580c);">6</div>
+                        <div class="details"><div class="type">捲腹</div><div class="desc">3 x 20</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Tips -->
         <div class="tips-section">
             <h2>💡 訓練建議</h2>
@@ -1320,7 +1734,66 @@
             '2026-03-28': { week: '比賽日', type: '5K 比賽', icon: '🏁', distance: '5 km', pace: '目標 6:30-6:40', hr: '全力', race: true, milestone: 'sub-33！' }
         };
 
-        // 顯示今日訓練
+        // 健身課表資料
+        const gymRoutines = {
+            push: {
+                name: 'Push', subtitle: '胸 / 肩 / 三頭',
+                exercises: [
+                    { name: '死蟲式', sets: '3×10（每邊）' },
+                    { name: '啞鈴平板臥推', sets: '4×10' },
+                    { name: '上斜啞鈴臥推', sets: '3×12' },
+                    { name: '啞鈴肩推', sets: '3×10' },
+                    { name: '側平舉', sets: '3×15' },
+                    { name: '繩索下壓', sets: '3×12' }
+                ]
+            },
+            pull: {
+                name: 'Pull', subtitle: '背 / 二頭',
+                exercises: [
+                    { name: '鳥狗式', sets: '3×10（每邊）' },
+                    { name: '滑輪下拉', sets: '4×10' },
+                    { name: '啞鈴單手划船', sets: '3×12' },
+                    { name: '坐姿划船', sets: '3×12' },
+                    { name: 'Face Pull', sets: '3×15' },
+                    { name: '啞鈴二頭彎舉', sets: '3×12' }
+                ]
+            },
+            legs: {
+                name: 'Legs', subtitle: '腿 / 臀',
+                exercises: [
+                    { name: '鳥狗式', sets: '3×10（每邊）' },
+                    { name: '槓鈴深蹲', sets: '4×10' },
+                    { name: '羅馬尼亞硬舉', sets: '3×10' },
+                    { name: '保加利亞分腿蹲', sets: '3×10' },
+                    { name: '腿推機', sets: '3×12' },
+                    { name: '站姿提踵', sets: '3×15' }
+                ]
+            },
+            core: {
+                name: '核心', subtitle: '功能性',
+                exercises: [
+                    { name: '死蟲式', sets: '3×10（每邊）' },
+                    { name: '鳥狗式', sets: '3×10（每邊）' },
+                    { name: '壺鈴擺盪', sets: '3×15' },
+                    { name: '農夫走路', sets: '3×30m' },
+                    { name: 'TRX 划船', sets: '3×12' },
+                    { name: '捲腹', sets: '3×20' }
+                ]
+            }
+        };
+
+        // 每日行程（0=日, 1=一, ..., 6=六）
+        const dailySchedule = {
+            0: { gym: 'core', run: false },
+            1: { gym: 'push', run: true },
+            2: { gym: null, run: true },
+            3: { gym: 'pull', run: true },
+            4: { gym: null, run: true },
+            5: { gym: 'legs', run: true },
+            6: { gym: null, run: true }
+        };
+
+        // 顯示今日行程
         function displayTodayTraining() {
             const today = new Date();
             const dateStr = today.toISOString().split('T')[0];
@@ -1331,67 +1804,88 @@
 
             document.getElementById('todayDate').textContent = `${month}/${day} (${weekday})`;
 
+            const schedule = dailySchedule[today.getDay()];
             const workout = trainingSchedule[dateStr];
             const container = document.getElementById('workoutContent');
 
-            if (!workout) {
-                container.innerHTML = `
-                    <div class="rest-day">
-                        <div class="rest-icon">📋</div>
-                        <div class="rest-text">今日無排定訓練</div>
-                        <div style="color: #64748b; margin-top: 10px; font-size: 0.9rem;">可自主安排輕鬆跑或休息</div>
-                    </div>
-                `;
-                return;
+            let html = '';
+
+            // Timeline tags
+            html += '<div class="today-timeline">';
+            if (schedule.gym) {
+                const gym = gymRoutines[schedule.gym];
+                html += `<div class="time-tag gym">10:00 🏋️ ${gym.name}</div>`;
+            }
+            if (schedule.gym) {
+                html += '<div class="time-tag dev">12:00-18:00 💻 開發</div>';
+            } else {
+                html += '<div class="time-tag dev">12:30-18:00 💻 開發</div>';
+            }
+            if (!schedule.run) {
+                html += '<div class="time-tag dev">19:00-23:00 💻 開發</div>';
+                html += '<div class="time-tag rest-tag">😴 休跑</div>';
+            } else {
+                html += '<div class="time-tag dev">19:00-21:00 💻 開發</div>';
+                if (workout && workout.race) {
+                    html += `<div class="time-tag race">21:00 🏁 ${workout.type}</div>`;
+                } else if (workout && !workout.rest) {
+                    html += `<div class="time-tag run">21:00 🏃 ${workout.type}</div>`;
+                } else if (workout && workout.rest) {
+                    html += '<div class="time-tag rest-tag">😴 休跑</div>';
+                } else {
+                    html += '<div class="time-tag run">21:00 🏃 跑步</div>';
+                }
+            }
+            html += '</div>';
+
+            // Gym section
+            if (schedule.gym) {
+                const gym = gymRoutines[schedule.gym];
+                html += '<div class="today-gym">';
+                html += `<h3>🏋️ 今日健身：${gym.name} — ${gym.subtitle}</h3>`;
+                html += '<div class="exercises">';
+                gym.exercises.forEach((ex, i) => {
+                    html += `<div class="exercise-item">
+                        <div class="num">${i + 1}</div>
+                        <div class="name">${ex.name}</div>
+                        <div class="sets">${ex.sets}</div>
+                    </div>`;
+                });
+                html += '</div></div>';
             }
 
-            if (workout.rest) {
-                container.innerHTML = `
-                    <div class="workout-main" style="justify-content: center;">
-                        <div class="workout-type" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
-                            <div class="type-icon">${workout.icon}</div>
-                            <div class="type-name">${workout.type}</div>
-                        </div>
-                        <div class="week-info">
-                            <div class="week-label">訓練週期</div>
-                            <div class="week-value">${workout.week}</div>
-                            ${workout.note ? `<div style="margin-top: 8px; color: #94a3b8; font-size: 0.85rem;">${workout.note}</div>` : ''}
-                        </div>
-                    </div>
-                `;
-                return;
+            // Running section
+            if (workout && !workout.rest && schedule.run) {
+                const raceStyle = workout.race ? 'border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.08);' : '';
+                html += `<div class="today-run" style="${raceStyle}">`;
+                html += `<h3>${workout.race ? '🏁' : '🏃'} 今日跑步：${workout.type}${workout.week ? ' — ' + workout.week : ''}</h3>`;
+                html += '<div class="run-details">';
+                html += `<div class="run-detail"><div class="label">距離</div><div class="value">${workout.distance}</div></div>`;
+                html += `<div class="run-detail"><div class="label">配速/內容</div><div class="value">${workout.pace}</div></div>`;
+                html += `<div class="run-detail"><div class="label">心率目標</div><div class="value">${workout.hr}</div></div>`;
+                html += '</div>';
+                if (workout.milestone) {
+                    html += `<div style="margin-top: 12px; padding: 10px 15px; background: rgba(16, 185, 129, 0.2); border-radius: 8px; color: #10b981; font-weight: 600;">🎯 ${workout.milestone}</div>`;
+                }
+                html += '</div>';
+            } else if (!schedule.run) {
+                html += '<div class="today-run" style="border-color: rgba(100, 116, 139, 0.2); background: rgba(100, 116, 139, 0.05);">';
+                html += '<h3>😴 今日休跑</h3>';
+                html += `<p style="color: #94a3b8; font-size: 0.9rem;">讓身體充分恢復</p>`;
+                html += '</div>';
+            } else if (workout && workout.rest) {
+                html += '<div class="today-run" style="border-color: rgba(100, 116, 139, 0.2); background: rgba(100, 116, 139, 0.05);">';
+                html += '<h3>😴 今日休跑</h3>';
+                html += `<p style="color: #94a3b8; font-size: 0.9rem;">${workout.note || '讓身體充分恢復'}</p>`;
+                html += '</div>';
+            } else {
+                html += '<div class="today-run">';
+                html += '<h3>🏃 今日跑步：自主安排</h3>';
+                html += '<p style="color: #94a3b8; font-size: 0.9rem;">可安排輕鬆跑或依體感調整</p>';
+                html += '</div>';
             }
 
-            let raceStyle = workout.race ? 'background: linear-gradient(135deg, #dc2626, #f97316);' : '';
-            let milestoneHtml = workout.milestone ? `<div style="margin-top: 15px; padding: 10px 15px; background: rgba(16, 185, 129, 0.2); border-radius: 8px; color: #10b981; font-weight: 600;">🎯 ${workout.milestone}</div>` : '';
-
-            container.innerHTML = `
-                <div class="workout-main">
-                    <div class="workout-type" style="${raceStyle}">
-                        <div class="type-icon">${workout.icon}</div>
-                        <div class="type-name">${workout.type}</div>
-                    </div>
-                    <div class="workout-details">
-                        <div class="detail-item">
-                            <div class="detail-label">距離</div>
-                            <div class="detail-value">${workout.distance}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">配速/內容</div>
-                            <div class="detail-value">${workout.pace}</div>
-                        </div>
-                        <div class="detail-item">
-                            <div class="detail-label">心率目標</div>
-                            <div class="detail-value">${workout.hr}</div>
-                        </div>
-                    </div>
-                    <div class="week-info">
-                        <div class="week-label">訓練週期</div>
-                        <div class="week-value">${workout.week}</div>
-                    </div>
-                </div>
-                ${milestoneHtml}
-            `;
+            container.innerHTML = html;
         }
         displayTodayTraining();
     </script>
