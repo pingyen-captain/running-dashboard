@@ -2056,7 +2056,7 @@
                 {x:lateP,y:avgHr.slice(mid),mode:'markers',type:'scatter',marker:{color:'#22c55e',size:9,opacity:0.7},name:'近期 ('+dates[mid]+'-'+dates[dates.length-1]+')'},
                 {x:[eMin,eMax],y:[eMin,eMax].map(x=>regE.slope*x+regE.intercept),mode:'lines',line:{color:'#ef4444',width:2.5,dash:'dash'},name:'早期 R²='+regE.r2.toFixed(3)},
                 {x:[lMin,lMax],y:[lMin,lMax].map(x=>regL.slope*x+regL.intercept),mode:'lines',line:{color:'#22c55e',width:2.5,dash:'dash'},name:'近期 R²='+regL.r2.toFixed(3)}
-            ], {...darkLayout,height:300,xaxis:{...darkLayout.xaxis,title:'配速 (min/km)',autorange:'reversed'},yaxis:{...darkLayout.yaxis,title:'心率 (bpm)'},showlegend:true,legend:{x:0,y:1.15,orientation:'h',font:{size:11}},
+            ], {...darkLayout,height:300,xaxis:{...darkLayout.xaxis,title:'配速 (min/km)',type:'linear',autorange:'reversed'},yaxis:{...darkLayout.yaxis,title:'心率 (bpm)',type:'linear'},showlegend:true,legend:{x:0,y:1.15,orientation:'h',font:{size:11}},
                 annotations:[
                     {x:8.0,y:regE.slope*8+regE.intercept,ax:50,ay:-30,text:'早期 8:00→'+Math.round(regE.slope*8+regE.intercept)+'bpm',showarrow:true,arrowcolor:'#ef4444',font:{color:'#ef4444',size:11},bgcolor:'rgba(0,0,0,0.7)',bordercolor:'#ef4444',borderpad:4},
                     {x:8.0,y:regL.slope*8+regL.intercept,ax:50,ay:30,text:'近期 8:00→'+Math.round(regL.slope*8+regL.intercept)+'bpm',showarrow:true,arrowcolor:'#22c55e',font:{color:'#22c55e',size:11},bgcolor:'rgba(0,0,0,0.7)',bordercolor:'#22c55e',borderpad:4}
