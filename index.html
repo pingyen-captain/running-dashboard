@@ -2047,17 +2047,19 @@
                 margin:{l:0,r:0,t:10,b:0}, showlegend:false
             }, {responsive:true});
 
-            // 2D 回歸
-            const xL=[6.5,12.5];
+            // 2D 回歸 — 限制回歸線在各組數據範圍內
+            const earlyP = paces.slice(0,mid), lateP = paces.slice(mid);
+            const eMin = Math.min(...earlyP), eMax = Math.max(...earlyP);
+            const lMin = Math.min(...lateP), lMax = Math.max(...lateP);
             Plotly.newPlot('regression2dChart', [
-                {x:paces.slice(0,mid),y:avgHr.slice(0,mid),mode:'markers',type:'scatter',marker:{color:'#ef4444',size:9,opacity:0.7},name:'早期 ('+dates[0]+'-'+dates[mid-1]+')'},
-                {x:paces.slice(mid),y:avgHr.slice(mid),mode:'markers',type:'scatter',marker:{color:'#22c55e',size:9,opacity:0.7},name:'近期 ('+dates[mid]+'-'+dates[dates.length-1]+')'},
-                {x:xL,y:xL.map(x=>regE.slope*x+regE.intercept),mode:'lines',line:{color:'#ef4444',width:2,dash:'dash'},name:'早期 R²='+regE.r2.toFixed(3)},
-                {x:xL,y:xL.map(x=>regL.slope*x+regL.intercept),mode:'lines',line:{color:'#22c55e',width:2,dash:'dash'},name:'近期 R²='+regL.r2.toFixed(3)}
+                {x:earlyP,y:avgHr.slice(0,mid),mode:'markers',type:'scatter',marker:{color:'#ef4444',size:9,opacity:0.7},name:'早期 ('+dates[0]+'-'+dates[mid-1]+')'},
+                {x:lateP,y:avgHr.slice(mid),mode:'markers',type:'scatter',marker:{color:'#22c55e',size:9,opacity:0.7},name:'近期 ('+dates[mid]+'-'+dates[dates.length-1]+')'},
+                {x:[eMin,eMax],y:[eMin,eMax].map(x=>regE.slope*x+regE.intercept),mode:'lines',line:{color:'#ef4444',width:2.5,dash:'dash'},name:'早期 R²='+regE.r2.toFixed(3)},
+                {x:[lMin,lMax],y:[lMin,lMax].map(x=>regL.slope*x+regL.intercept),mode:'lines',line:{color:'#22c55e',width:2.5,dash:'dash'},name:'近期 R²='+regL.r2.toFixed(3)}
             ], {...darkLayout,height:300,xaxis:{...darkLayout.xaxis,title:'配速 (min/km)',autorange:'reversed'},yaxis:{...darkLayout.yaxis,title:'心率 (bpm)'},showlegend:true,legend:{x:0,y:1.15,orientation:'h',font:{size:11}},
                 annotations:[
-                    {x:8.0,y:regE.slope*8+regE.intercept,ax:40,ay:-25,text:'早期 8:00→'+Math.round(regE.slope*8+regE.intercept)+'bpm',showarrow:true,arrowcolor:'#ef4444',font:{color:'#ef4444',size:10},bgcolor:'rgba(0,0,0,0.6)',bordercolor:'#ef4444'},
-                    {x:8.0,y:regL.slope*8+regL.intercept,ax:40,ay:25,text:'近期 8:00→'+Math.round(regL.slope*8+regL.intercept)+'bpm',showarrow:true,arrowcolor:'#22c55e',font:{color:'#22c55e',size:10},bgcolor:'rgba(0,0,0,0.6)',bordercolor:'#22c55e'}
+                    {x:8.0,y:regE.slope*8+regE.intercept,ax:50,ay:-30,text:'早期 8:00→'+Math.round(regE.slope*8+regE.intercept)+'bpm',showarrow:true,arrowcolor:'#ef4444',font:{color:'#ef4444',size:11},bgcolor:'rgba(0,0,0,0.7)',bordercolor:'#ef4444',borderpad:4},
+                    {x:8.0,y:regL.slope*8+regL.intercept,ax:50,ay:30,text:'近期 8:00→'+Math.round(regL.slope*8+regL.intercept)+'bpm',showarrow:true,arrowcolor:'#22c55e',font:{color:'#22c55e',size:11},bgcolor:'rgba(0,0,0,0.7)',bordercolor:'#22c55e',borderpad:4}
                 ]
             }, chartConfig);
 
