@@ -1,0 +1,200 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Boris//Running Half Marathon 2026//ZH-TW
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:🏃 半馬訓練 2026
+X-WR-TIMEZONE:Asia/Taipei
+X-WR-CALDESC:12/6 新竹半馬 sub-2:15 訓練週期 (4/27-12/6)
+
+BEGIN:VTIMEZONE
+TZID:Asia/Taipei
+BEGIN:STANDARD
+DTSTART:19700101T000000
+TZOFFSETFROM:+0800
+TZOFFSETTO:+0800
+TZNAME:CST
+END:STANDARD
+END:VTIMEZONE
+
+BEGIN:VEVENT
+UID:weigh-in-weekly-2026-running@borisgpt3680
+DTSTAMP:20260427T000000Z
+DTSTART;TZID=Asia/Taipei:20260504T080000
+DTEND;TZID=Asia/Taipei:20260504T080500
+RRULE:FREQ=WEEKLY;BYDAY=MO;UNTIL=20261207T000000Z
+SUMMARY:⚖️ 量體重 + 傳給 Gemini
+DESCRIPTION:每週一早上空腹量體重（避開週日出門）\n1. 起床上完廁所空腹量\n2. 記錄到 Apple Health\n3. 傳數字給 Gemini 追蹤週進度\n4. 早上去 Push gym 前剛好\n\n12/6 比賽日目標：78 kg
+LOCATION:家
+BEGIN:VALARM
+ACTION:DISPLAY
+TRIGGER:-PT0M
+DESCRIPTION:量體重時間到
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:p1-end-2026-running@borisgpt3680
+DTSTAMP:20260427T000000Z
+DTSTART;TZID=Asia/Taipei:20260531T200000
+DTEND;TZID=Asia/Taipei:20260531T210000
+SUMMARY:📊 P1 階段結束 — 自查
+DESCRIPTION:P1 恢復+減脂期結束\n\n自查清單：\n☐ 體重達 86.5 kg\n☐ 12 km 長跑 @ 7:00 完成且無膝蓋不適\n☐ Leg Day 4 次以上完成\n☐ 飲食記錄連續 4 週\n\n下週進入 P2（6/1）：加入 Tempo 課表
+END:VEVENT
+
+BEGIN:VEVENT
+UID:p2-end-2026-running@borisgpt3680
+DTSTAMP:20260427T000000Z
+DTSTART;TZID=Asia/Taipei:20260705T200000
+DTEND;TZID=Asia/Taipei:20260705T210000
+SUMMARY:📊 P2 階段結束 — 自查
+DESCRIPTION:P2 基礎期結束\n\n自查清單：\n☐ 體重達 84 kg\n☐ Tempo 6km @ 6:00 完成（HR < 168）\n☐ 14 km 長跑無膝蓋不適\n\n下週進入 P3：加入間歇訓練
+END:VEVENT
+
+BEGIN:VEVENT
+UID:p3-end-2026-running@borisgpt3680
+DTSTAMP:20260427T000000Z
+DTSTART;TZID=Asia/Taipei:20260809T200000
+DTEND;TZID=Asia/Taipei:20260809T210000
+SUMMARY:📊 P3 結束 — 重要決策點
+DESCRIPTION:P3 進階期結束\n\n自查 + 決策：\n☐ 體重達 81.5 kg\n☐ 1km × 6 @ 5:30 完成\n☐ 16 km 長跑無膝蓋不適\n\n決策點：若達標 → 維持 sub-2:15 / 若落後 → 調整為 sub-2:20
+END:VEVENT
+
+BEGIN:VEVENT
+UID:hsinchu-registration-deadline@borisgpt3680
+DTSTAMP:20260427T000000Z
+DTSTART;TZID=Asia/Taipei:20260831T180000
+DTEND;TZID=Asia/Taipei:20260831T190000
+SUMMARY:⚠️ 新竹半馬報名最後機會
+DESCRIPTION:2026 新竹城市馬拉松半馬組\n報名截止：今天 23:59:59\n\n如果還沒報，現在報！\nhttps://shbglvknbzczzougqhko.supabase.co
+BEGIN:VALARM
+ACTION:DISPLAY
+TRIGGER:-PT2H
+DESCRIPTION:新竹半馬今晚截止報名
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:hsinchu-registration-suggested@borisgpt3680
+DTSTAMP:20260427T000000Z
+DTSTART;TZID=Asia/Taipei:20260615T100000
+DTEND;TZID=Asia/Taipei:20260615T103000
+SUMMARY:📝 報名新竹半馬（建議日期）
+DESCRIPTION:P1 已結束，看 P1 結果決定要不要報新竹半馬\n\n條件：\n- 體重達 86.5 kg ✓\n- 12K 長跑無膝蓋不適 ✓\n- 信心夠 → 報名 sub-2:15
+END:VEVENT
+
+BEGIN:VEVENT
+UID:p4-end-2026-running@borisgpt3680
+DTSTAMP:20260427T000000Z
+DTSTART;TZID=Asia/Taipei:20260913T200000
+DTEND;TZID=Asia/Taipei:20260913T210000
+SUMMARY:📊 P4 結束 — 自查
+DESCRIPTION:P4 專項期結束\n\n☐ 體重達 79.5 kg\n☐ HMP 10K @ 6:23 完成\n☐ 18K 長跑後段 6K @ 6:25 撐住\n\n下週進入 P5 高峰期：開始 19-20K 模擬跑
+END:VEVENT
+
+BEGIN:VEVENT
+UID:first-20k-2026-running@borisgpt3680
+DTSTAMP:20260427T000000Z
+DTSTART;TZID=Asia/Taipei:20260926T210000
+DTEND;TZID=Asia/Taipei:20260926T230000
+SUMMARY:⭐ 人生首次 20K 長跑！
+DESCRIPTION:P5 W2 重點課表\n\n距離：20 km\n配速：7:00-7:10 Z2\n心率：< 155\n\n比賽距離心理突破！
+BEGIN:VALARM
+ACTION:DISPLAY
+TRIGGER:-PT3H
+DESCRIPTION:今晚 20K 長跑，記得補水補食物
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:18k-hmp-sim-2026-running@borisgpt3680
+DTSTAMP:20260427T000000Z
+DTSTART;TZID=Asia/Taipei:20261017T210000
+DTEND;TZID=Asia/Taipei:20261017T230000
+SUMMARY:⭐⭐⭐ 18K @ 6:30 模擬跑（sub-2:15 信心檢查）
+DESCRIPTION:P5 最重要的模擬週\n\n距離：18 km\n配速：整場 6:30/km（sub-2:15 配速 +7s 緩衝）\n心率：158-168\n\n判定：\n- 感覺輕鬆 + HR 在 165 內 → sub-2:15 信心爆棚\n- 後段掉速 / HR 衝到 175+ → 比賽日改打 sub-2:20
+BEGIN:VALARM
+ACTION:DISPLAY
+TRIGGER:-P1D
+DESCRIPTION:明天 18K HMP 模擬跑，今晚早睡 + 多吃碳水
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:p5-end-2026-running@borisgpt3680
+DTSTAMP:20260427T000000Z
+DTSTART;TZID=Asia/Taipei:20261025T200000
+DTEND;TZID=Asia/Taipei:20261025T210000
+SUMMARY:📊 P5 結束 — 打包清邁！
+DESCRIPTION:P5 高峰期結束\n\n☐ 體重達 78 kg\n☐ 完成 2 次 20K 長跑\n☐ 10/17 18K @ 6:30 順利\n\n明天起準備清邁旅遊（10/28-11/3）\n旅遊期是戰術 deload，可以放鬆吃喝
+END:VEVENT
+
+BEGIN:VEVENT
+UID:chiangmai-trip-2026-running@borisgpt3680
+DTSTAMP:20260427T000000Z
+DTSTART;VALUE=DATE:20261028
+DTEND;VALUE=DATE:20261104
+SUMMARY:🌴 清邁旅遊（戰術 deload）
+DESCRIPTION:7 天清邁旅遊\n\n訓練原則：\n✅ 走路觀光 15K+ 步/天\n✅ 2-3 次輕鬆跑 5K Z2（旅館跑步機）\n❌ 不做高強度、不跑 >10K\n❌ 不熬夜\n❌ Gemini 飲食記錄暫停\n\n回來繼續 P6
+END:VEVENT
+
+BEGIN:VEVENT
+UID:beigang-10k-race-2026@borisgpt3680
+DTSTAMP:20260427T000000Z
+DTSTART;TZID=Asia/Taipei:20261121T070000
+DTEND;TZID=Asia/Taipei:20261121T100000
+SUMMARY:🏃 北港馬拉松 10K（測試賽）
+LOCATION:雲林北港
+DESCRIPTION:北港馬拉松 10K 組\n角色：post-trip 測試賽\n\n配速：6:50-7:00（不衝 PR）\n心率：155-165（Zone 3-4 中段）\n目標：完賽 ~70 分 + 享受補給\n\n意義：驗證「P5 高峰 + 旅遊 + 歸隊」三段恢復狀態\n跑感超好 → P7 加重練量 / 跑感差 → 多休 + 改 sub-2:20
+BEGIN:VALARM
+ACTION:DISPLAY
+TRIGGER:-P1D
+DESCRIPTION:明天北港 10K！記得帶水泡貼、凡士林
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:final-18k-sim-2026-running@borisgpt3680
+DTSTAMP:20260427T000000Z
+DTSTART;TZID=Asia/Taipei:20261128T210000
+DTEND;TZID=Asia/Taipei:20261128T230000
+SUMMARY:⭐⭐⭐ 18K 最終模擬（賽前 8 天）
+DESCRIPTION:P7 銳化週的關鍵課表\n\n距離：18 km\n結構：前 10K Z2 + 後 8K @ 6:25 HMP\n\n判定：\n- 後 8K @ HMP 感受良好 → sub-2:15 GO\n- 後 8K HMP 撐不住 → 比賽降目標到 sub-2:20
+BEGIN:VALARM
+ACTION:DISPLAY
+TRIGGER:-P1D
+DESCRIPTION:明天最終 18K 模擬，今晚多吃碳水
+END:VALARM
+END:VEVENT
+
+BEGIN:VEVENT
+UID:carb-loading-start-2026@borisgpt3680
+DTSTAMP:20260427T000000Z
+DTSTART;TZID=Asia/Taipei:20261202T070000
+DTEND;TZID=Asia/Taipei:20261202T080000
+RRULE:FREQ=DAILY;UNTIL=20261205T000000Z
+SUMMARY:🍞 碳水 Loading（賽前）
+DESCRIPTION:賽前碳水補充\n碳水增加 50%（每天 350-400g）\n\n推薦：白米、義大利麵、地瓜、香蕉、吐司\n避免：油炸、辛辣、新食物、酒精
+END:VEVENT
+
+BEGIN:VEVENT
+UID:hsinchu-half-marathon-2026@borisgpt3680
+DTSTAMP:20260427T000000Z
+DTSTART;TZID=Asia/Taipei:20261206T070000
+DTEND;TZID=Asia/Taipei:20261206T100000
+SUMMARY:🏆 新竹城市馬半馬！sub-2:15
+LOCATION:新竹市大湳雅公園
+DESCRIPTION:🎯 A 目標：sub-2:15（6:23/km）\n🎯 B 目標：sub-2:20（6:38/km）\n🎯 C 目標：sub-2:25（6:52/km）\n\n配速計劃：\n1km 6:35（保守）→ 2km 6:30 → 3km+ 6:23 巡航 → 17-19km 6:20 → 20km 6:15 → 21km 6:00 全力衝\n\n心率：1-5km < 158 / 6-15km 158-168 / 16-21km 168-178\n\n補給：每水站都喝 + 10K & 15K 各一包能量膠\n\n裝備：4/26 用過的鞋 + 凡士林 + 水泡貼\n\n往前站位避免起跑塞車！
+BEGIN:VALARM
+ACTION:DISPLAY
+TRIGGER:-PT2H30M
+DESCRIPTION:比賽日！吐司+香蕉+少量蛋白質
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+TRIGGER:-P3D
+DESCRIPTION:3 天後新竹半馬，今天起碳水 loading
+END:VALARM
+END:VEVENT
+
+END:VCALENDAR

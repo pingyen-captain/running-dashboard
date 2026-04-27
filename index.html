@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🏃 健康管理 Dashboard</title>
     <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
@@ -779,73 +780,50 @@
             </div>
         </div>
 
-        <!-- Stats Cards -->
+        <!-- Stats Cards (動態填入) -->
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="icon">🏃</div>
-                <div class="value">60</div>
+                <div class="value" id="stat-total-runs">—</div>
                 <div class="label">總跑步次數</div>
             </div>
             <div class="stat-card">
                 <div class="icon">📏</div>
-                <div class="value">277.95 km</div>
+                <div class="value" id="stat-total-distance">—</div>
                 <div class="label">累積里程</div>
             </div>
             <div class="stat-card">
                 <div class="icon">⚡</div>
-                <div class="value">6:13</div>
+                <div class="value" id="stat-best-pace">—</div>
                 <div class="label">最佳配速 (min/km)</div>
             </div>
             <div class="stat-card highlight">
                 <div class="icon">🏆</div>
-                <div class="value">12.00 km</div>
+                <div class="value" id="stat-longest">—</div>
                 <div class="label">最長距離</div>
             </div>
             <div class="stat-card highlight">
-                <div class="icon">📈</div>
-                <div class="value">+39%</div>
-                <div class="label">配速進步</div>
+                <div class="icon">⚖️</div>
+                <div class="value" id="stat-current-weight">—</div>
+                <div class="label">目前體重 (目標 78kg)</div>
             </div>
         </div>
 
-        <!-- Progress Section -->
-        <div class="progress-section">
-            <h2>📊 4 月進度</h2>
+        <!-- 本月進度（動態） -->
+        <div class="progress-section" id="current-month-progress">
+            <h2 id="current-month-title">📊 本月進度</h2>
             <div class="progress-bar-container">
-                <div class="progress-bar" style="width: 99%;">99%</div>
+                <div class="progress-bar" id="current-month-bar" style="width: 0%;">0%</div>
             </div>
             <div class="progress-stats">
-                <span>目標：80 km / 月</span>
-                <span>已完成：79.40 km</span>
-                <span>剩餘：0.60 km</span>
+                <span id="current-month-target">目標：— km / 月</span>
+                <span id="current-month-done">已完成：— km</span>
+                <span id="current-month-remaining">剩餘：— km</span>
             </div>
         </div>
 
-        <!-- March Summary -->
-        <div class="progress-section" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(34, 197, 94, 0.1)); border-color: rgba(16, 185, 129, 0.3);">
-            <h2>✅ 3 月總結</h2>
-            <div class="progress-bar-container">
-                <div class="progress-bar" style="width: 100%; background: linear-gradient(90deg, #10b981, #22c55e);">171%</div>
-            </div>
-            <div class="progress-stats">
-                <span>目標：60 km</span>
-                <span>完成：102.75 km</span>
-                <span>次數：22 次</span>
-            </div>
-        </div>
-
-        <!-- January Summary -->
-        <div class="progress-section" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(34, 197, 94, 0.1)); border-color: rgba(16, 185, 129, 0.3);">
-            <h2>✅ 1 月總結</h2>
-            <div class="progress-bar-container">
-                <div class="progress-bar" style="width: 92%; background: linear-gradient(90deg, #10b981, #22c55e);">92%</div>
-            </div>
-            <div class="progress-stats">
-                <span>目標：60 km</span>
-                <span>完成：55.33 km</span>
-                <span>次數：15 次</span>
-            </div>
-        </div>
+        <!-- 月度歷史摘要（動態，最近 3 個月） -->
+        <div id="monthly-history"></div>
 
         <!-- Charts -->
         <div class="charts-grid">
@@ -923,157 +901,66 @@
             <h2>🏁 比賽目標</h2>
             <div class="race-grid">
                 <div class="race-card">
-                    <div class="date">2026 年 3 月 28 日（六）</div>
-                    <div class="race-name">5K 馬拉松</div>
+                    <div class="date">2026 年 11 月 21 日（六）</div>
+                    <div class="race-name">北港馬拉松 10K</div>
                     <div class="race-stats">
                         <div class="race-stat">
+                            <div class="stat-label">角色</div>
+                            <div class="stat-value">測試賽</div>
+                        </div>
+                        <div class="race-stat">
                             <div class="stat-label">目標時間</div>
-                            <div class="stat-value">sub-33 分</div>
+                            <div class="stat-value">~70 分</div>
                         </div>
                         <div class="race-stat">
                             <div class="stat-label">目標配速</div>
-                            <div class="stat-value">6:30-6:40</div>
+                            <div class="stat-value">6:50-7:00</div>
                         </div>
                         <div class="race-stat">
-                            <div class="stat-label">目前 PB</div>
-                            <div class="stat-value">35:10</div>
-                        </div>
-                        <div class="race-stat">
-                            <div class="stat-label">需進步</div>
-                            <div class="stat-value">-2:10</div>
+                            <div class="stat-label">10K PB</div>
+                            <div class="stat-value">1:10:36 (04/26)</div>
                         </div>
                     </div>
                     <div class="countdown">
-                        <div class="days" id="countdown5k">34</div>
+                        <div class="days" id="countdown-10k">—</div>
                         <div class="days-label">天後比賽</div>
                     </div>
                 </div>
-                <div class="race-card">
-                    <div class="date">2026 年 4 月 26 日（日）</div>
-                    <div class="race-name">10K 馬拉松</div>
+                <div class="race-card highlight">
+                    <div class="date">2026 年 12 月 6 日（日）</div>
+                    <div class="race-name">新竹城市馬半馬 (AIMS)</div>
                     <div class="race-stats">
                         <div class="race-stat">
-                            <div class="stat-label">目標時間</div>
-                            <div class="stat-value">sub-68 ⭐</div>
+                            <div class="stat-label">A 目標</div>
+                            <div class="stat-value">sub-2:15 ⭐</div>
                         </div>
                         <div class="race-stat">
-                            <div class="stat-label">目標配速</div>
-                            <div class="stat-value">6:48</div>
+                            <div class="stat-label">B 目標</div>
+                            <div class="stat-value">sub-2:20</div>
+                        </div>
+                        <div class="race-stat">
+                            <div class="stat-label">A 配速</div>
+                            <div class="stat-value">6:23/km</div>
                         </div>
                         <div class="race-stat">
                             <div class="stat-label">最長距離</div>
-                            <div class="stat-value">12.00 km ✅</div>
-                        </div>
-                        <div class="race-stat">
-                            <div class="stat-label">長跑最佳</div>
-                            <div class="stat-value">6:59 (04/19)</div>
+                            <div class="stat-value" id="race-longest">—</div>
                         </div>
                     </div>
                     <div class="countdown">
-                        <div class="days" id="countdown10k">63</div>
+                        <div class="days" id="countdown-half">—</div>
                         <div class="days-label">天後比賽</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Training Plan -->
+        <!-- 本週訓練（從 Supabase training_plan 動態載入） -->
         <div class="training-plan">
-            <h2>📋 10K 備戰計劃（4/26 目標 sub-68）</h2>
-            <p style="color: #94a3b8; margin-bottom: 16px;">5K 比賽成績：30:49（sub-31！）→ Riegel 預測 10K：64:23</p>
-            <div class="week-grid">
-                <div class="week-card">
-                    <h4>W1 <span class="badge">恢復+重建</span></h4>
-                    <div class="workout-item">
-                        <div class="day">4/4</div>
-                        <div class="details">
-                            <div class="type">節奏跑</div>
-                            <div class="desc">3km @ 6:45-7:00，測試賽後恢復</div>
-                        </div>
-                    </div>
-                    <div class="workout-item">
-                        <div class="day">4/6</div>
-                        <div class="details">
-                            <div class="type">長跑</div>
-                            <div class="desc">6 km @ 7:15-7:30，恢復性質</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="week-card">
-                    <h4>W2 <span class="badge">耐力建設</span></h4>
-                    <div class="workout-item">
-                        <div class="day">4/9</div>
-                        <div class="details">
-                            <div class="type">間歇訓練</div>
-                            <div class="desc">800m × 4，休 2 分</div>
-                        </div>
-                    </div>
-                    <div class="workout-item">
-                        <div class="day">4/11</div>
-                        <div class="details">
-                            <div class="type">10K 配速跑</div>
-                            <div class="desc">4km @ 6:45-6:50（決定 A/B 目標）</div>
-                        </div>
-                    </div>
-                    <div class="workout-item">
-                        <div class="day">4/13</div>
-                        <div class="details">
-                            <div class="type">長跑 ⭐</div>
-                            <div class="desc">10 km @ 7:15-7:30（首次 10K！）</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="week-card">
-                    <h4>W3 <span class="badge">高峰週</span></h4>
-                    <div class="workout-item">
-                        <div class="day">4/16</div>
-                        <div class="details">
-                            <div class="type">間歇訓練</div>
-                            <div class="desc">1km × 3，休 2 分（最後高強度）</div>
-                        </div>
-                    </div>
-                    <div class="workout-item">
-                        <div class="day">4/18</div>
-                        <div class="details">
-                            <div class="type">10K 配速模擬</div>
-                            <div class="desc">6km @ 6:45-6:50（關鍵測試）</div>
-                        </div>
-                    </div>
-                    <div class="workout-item">
-                        <div class="day">4/20</div>
-                        <div class="details">
-                            <div class="type">長跑 ⭐⭐</div>
-                            <div class="desc">12 km @ 7:15-7:30（最長距離挑戰！）</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="week-card">
-                    <h4>W4 <span class="badge">減量週</span></h4>
-                    <div class="workout-item">
-                        <div class="day">4/23</div>
-                        <div class="details">
-                            <div class="type">短刺激</div>
-                            <div class="desc">200m × 4 輕快跑，喚醒腿部</div>
-                        </div>
-                    </div>
-                    <div class="workout-item">
-                        <div class="day">4/25</div>
-                        <div class="details">
-                            <div class="type">完全休息</div>
-                            <div class="desc">賽前休息，吃飽碳水</div>
-                        </div>
-                    </div>
-                    <div class="workout-item">
-                        <div class="day">4/26</div>
-                        <div class="details">
-                            <div class="type">🏁 10K 比賽</div>
-                            <div class="desc">目標 sub-68！配速 6:48</div>
-                        </div>
-                    </div>
-                </div>
+            <h2>📋 本週訓練（半馬 sub-2:15 計劃）</h2>
+            <p style="color: #94a3b8; margin-bottom: 16px;" id="this-week-phase">階段：— · 距離 12/6 半馬：— 天</p>
+            <div class="week-grid" id="this-week-workouts">
+                <!-- 動態填入：7 天課表 -->
             </div>
         </div>
 
@@ -1314,11 +1201,11 @@
                             <td style="padding: 10px; color: #94a3b8;">10:00</td>
                             <td style="padding: 10px; text-align: center; background: rgba(139,92,246,0.15); border-radius: 8px;">🏋️ Push</td>
                             <td style="padding: 10px; text-align: center; color: #475569;">—</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(16,185,129,0.15); border-radius: 8px;">🏋️ Legs</td>
+                            <td style="padding: 10px; text-align: center; color: #475569;">—</td>
                             <td style="padding: 10px; text-align: center; background: rgba(139,92,246,0.15); border-radius: 8px;">🏋️ Pull</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(249,115,22,0.15); border-radius: 8px;">🏋️ 跑者專項</td>
                             <td style="padding: 10px; text-align: center; color: #475569;">—</td>
-                            <td style="padding: 10px; text-align: center; background: rgba(139,92,246,0.15); border-radius: 8px;">🏋️ Legs</td>
-                            <td style="padding: 10px; text-align: center; color: #475569;">—</td>
-                            <td style="padding: 10px; text-align: center; background: rgba(139,92,246,0.15); border-radius: 8px;">🏋️ 核心</td>
                         </tr>
                         <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
                             <td style="padding: 10px; color: #94a3b8;">12-18</td>
@@ -1343,10 +1230,10 @@
                         <tr>
                             <td style="padding: 10px; color: #94a3b8;">21:00</td>
                             <td style="padding: 10px; text-align: center; background: rgba(16,185,129,0.15); border-radius: 8px;">🏃 輕鬆</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(249,115,22,0.15); border-radius: 8px;">🏃 Tempo/間歇</td>
+                            <td style="padding: 10px; text-align: center; background: rgba(16,185,129,0.15); border-radius: 8px;">🏃 恢復</td>
+                            <td style="padding: 10px; text-align: center; color: #64748b;">😴 全休</td>
                             <td style="padding: 10px; text-align: center; background: rgba(16,185,129,0.15); border-radius: 8px;">🏃 輕鬆</td>
-                            <td style="padding: 10px; text-align: center; background: rgba(239,68,68,0.15); border-radius: 8px;">🏃 間歇</td>
-                            <td style="padding: 10px; text-align: center; background: rgba(16,185,129,0.15); border-radius: 8px;">🏃 輕鬆</td>
-                            <td style="padding: 10px; text-align: center; background: rgba(249,115,22,0.15); border-radius: 8px;">🏃 節奏</td>
                             <td style="padding: 10px; text-align: center; background: rgba(139,92,246,0.15); border-radius: 8px;">🏃 長跑</td>
                             <td style="padding: 10px; text-align: center; color: #64748b;">😴</td>
                         </tr>
@@ -1354,16 +1241,16 @@
                 </table>
             </div>
             <div style="display: flex; gap: 20px; margin-top: 15px; flex-wrap: wrap; font-size: 0.85rem; color: #94a3b8;">
-                <span>🏋️ 健身 4天</span>
-                <span>🏃 跑步 6天</span>
+                <span>🏋️ 健身 4天（P1-P2）→ 2天（P5）</span>
+                <span>🏃 跑步 5天</span>
                 <span>💻 開發 ~8hr/天</span>
-                <span>😴 休跑 1天</span>
+                <span>😴 全休 2天（四+日）</span>
             </div>
         </div>
 
         <!-- Gym Routine -->
         <div class="training-plan">
-            <h2>🏋️ 健身課表（Push / Pull / Legs / 核心）</h2>
+            <h2>🏋️ 健身課表（Push / Pull / Legs / 跑者專項）</h2>
             <div class="week-grid">
                 <div class="week-card">
                     <h4>Push <span class="badge" style="background: rgba(239, 68, 68, 0.2); color: #f87171;">胸 / 肩 / 三頭</span></h4>
@@ -1422,14 +1309,14 @@
                 </div>
 
                 <div class="week-card">
-                    <h4>Legs <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">腿 / 臀</span></h4>
+                    <h4>Legs <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: #34d399;">膝蓋友善（髖主導）</span></h4>
                     <div class="workout-item">
                         <div class="day" style="background: linear-gradient(135deg, #10b981, #059669);">1</div>
-                        <div class="details"><div class="type">鳥狗式</div><div class="desc">3 x 10（每邊）</div></div>
+                        <div class="details"><div class="type">熱身：髖橋 + 蚌式</div><div class="desc">各 2 x 15</div></div>
                     </div>
                     <div class="workout-item">
                         <div class="day" style="background: linear-gradient(135deg, #10b981, #059669);">2</div>
-                        <div class="details"><div class="type">槓鈴深蹲</div><div class="desc">4 x 10</div></div>
+                        <div class="details"><div class="type">槓鈴髖推 ⭐</div><div class="desc">4 x 10（跑者王牌、零膝蓋負擔）</div></div>
                     </div>
                     <div class="workout-item">
                         <div class="day" style="background: linear-gradient(135deg, #10b981, #059669);">3</div>
@@ -1437,43 +1324,47 @@
                     </div>
                     <div class="workout-item">
                         <div class="day" style="background: linear-gradient(135deg, #10b981, #059669);">4</div>
-                        <div class="details"><div class="type">保加利亞分腿蹲</div><div class="desc">3 x 10（每邊）</div></div>
+                        <div class="details"><div class="type">箱上深蹲（用木箱）</div><div class="desc">3 x 8（控制深度，膝蓋安全）</div></div>
                     </div>
                     <div class="workout-item">
                         <div class="day" style="background: linear-gradient(135deg, #10b981, #059669);">5</div>
-                        <div class="details"><div class="type">腿推機</div><div class="desc">3 x 12</div></div>
+                        <div class="details"><div class="type">腿推機（淺幅）</div><div class="desc">3 x 12（只下到 90 度）</div></div>
                     </div>
                     <div class="workout-item">
                         <div class="day" style="background: linear-gradient(135deg, #10b981, #059669);">6</div>
-                        <div class="details"><div class="type">站姿提踵</div><div class="desc">3 x 15</div></div>
+                        <div class="details"><div class="type">單腿小腿提踵</div><div class="desc">3 x 15（每邊）</div></div>
                     </div>
                 </div>
 
                 <div class="week-card">
-                    <h4>核心 <span class="badge" style="background: rgba(249, 115, 22, 0.2); color: #fb923c;">功能性</span></h4>
+                    <h4>跑者專項 <span class="badge" style="background: rgba(249, 115, 22, 0.2); color: #fb923c;">單腿 / 髖部 / 防旋</span></h4>
                     <div class="workout-item">
                         <div class="day" style="background: linear-gradient(135deg, #f97316, #ea580c);">1</div>
-                        <div class="details"><div class="type">死蟲式</div><div class="desc">3 x 10（每邊）</div></div>
+                        <div class="details"><div class="type">90/90 髖伸展</div><div class="desc">2 x 30 秒（每邊）</div></div>
                     </div>
                     <div class="workout-item">
                         <div class="day" style="background: linear-gradient(135deg, #f97316, #ea580c);">2</div>
-                        <div class="details"><div class="type">鳥狗式</div><div class="desc">3 x 10（每邊）</div></div>
+                        <div class="details"><div class="type">沙發伸展</div><div class="desc">2 x 45 秒（每邊）— 髂腰肌+股四頭</div></div>
                     </div>
                     <div class="workout-item">
                         <div class="day" style="background: linear-gradient(135deg, #f97316, #ea580c);">3</div>
-                        <div class="details"><div class="type">壺鈴擺盪</div><div class="desc">3 x 15</div></div>
+                        <div class="details"><div class="type">單腿 RDL</div><div class="desc">3 x 8（每邊）— 後側鏈+平衡</div></div>
                     </div>
                     <div class="workout-item">
                         <div class="day" style="background: linear-gradient(135deg, #f97316, #ea580c);">4</div>
-                        <div class="details"><div class="type">農夫走路</div><div class="desc">3 x 30m</div></div>
+                        <div class="details"><div class="type">保加利亞分腿蹲</div><div class="desc">3 x 10（每邊）</div></div>
                     </div>
                     <div class="workout-item">
                         <div class="day" style="background: linear-gradient(135deg, #f97316, #ea580c);">5</div>
-                        <div class="details"><div class="type">TRX 划船</div><div class="desc">3 x 12</div></div>
+                        <div class="details"><div class="type">Side Plank</div><div class="desc">3 x 30 秒（每邊）— 側向核心</div></div>
                     </div>
                     <div class="workout-item">
                         <div class="day" style="background: linear-gradient(135deg, #f97316, #ea580c);">6</div>
-                        <div class="details"><div class="type">捲腹</div><div class="desc">3 x 20</div></div>
+                        <div class="details"><div class="type">Pallof Press</div><div class="desc">3 x 12（每邊）— 防旋核心</div></div>
+                    </div>
+                    <div class="workout-item">
+                        <div class="day" style="background: linear-gradient(135deg, #f97316, #ea580c);">7</div>
+                        <div class="details"><div class="type">單腿提踵</div><div class="desc">3 x 15（每邊）— 跟腱耐力</div></div>
                     </div>
                 </div>
             </div>
@@ -1550,27 +1441,71 @@
     </div>
 
     <script>
-        // 數據
-        const dates = ['01/04', '01/07', '01/12', '01/13', '01/14', '01/15', '01/19', '01/20', '01/21', '01/22', '01/24', '01/26', '01/27', '01/28', '01/30', '02/02', '02/03', '02/08', '02/20', '02/22', '02/23', '02/25', '02/26', '02/28', '03/01', '03/03', '03/04', '03/05', '03/06', '03/07', '03/08', '03/10', '03/11', '03/12', '03/13', '03/14', '03/15', '03/17', '03/18', '03/19', '03/20', '03/24', '03/25', '03/26', '03/28', '03/31', '04/02', '04/03', '04/06', '04/08', '04/09', '04/10', '04/11', '04/12', '04/13', '04/15', '04/17', '04/18', '04/19', '04/20'];
-        const distances = [3.97, 1.46, 1.81, 3.20, 3.23, 3.42, 3.39, 3.61, 3.39, 3.43, 3.86, 4.10, 5.07, 5.12, 6.23, 6.03, 4.11, 6.11, 4.09, 3.03, 4.08, 4.05, 5.01, 4.00, 6.12, 4.11, 5.01, 4.05, 5.02, 4.12, 7.01, 4.02, 5.03, 4.07, 5.41, 4.01, 8.06, 4.07, 5.12, 4.05, 5.47, 3.01, 3.63, 2.02, 5.18, 4.16, 4.00, 4.14, 4.10, 5.00, 4.14, 6.37, 5.00, 10.01, 4.01, 6.10, 4.50, 6.03, 12.00, 4.00];
-        const paces = [10.76, 11.14, 12.30, 10.76, 9.98, 9.46, 8.86, 8.63, 9.33, 8.76, 8.26, 7.54, 7.37, 6.87, 8.82, 7.18, 8.58, 7.93, 9.67, 8.60, 8.85, 8.80, 8.43, 8.72, 7.50, 7.88, 7.25, 8.03, 7.48, 7.68, 7.43, 7.28, 6.92, 7.32, 6.75, 7.13, 7.17, 7.23, 6.22, 7.50, 6.78, 7.00, 7.98, 8.03, 6.37, 7.93, 7.72, 7.78, 7.38, 7.47, 7.97, 7.27, 7.45, 7.40, 7.38, 6.77, 7.18, 6.97, 6.98, 6.83];
-        const avgHr = [133, 100, 127, 125, 132, 133, 137, 135, 137, 144, 150, 153, 156, 164, 151, 161, 139, 148, 137, 139, 139, 141, 145, 144, 150, 138, 155, 139, 151, 139, 146, 143, 152, 138, 162, 142, 151, 137, 158, 138, 159, 139, 140, 138, 162, 140, 144, 139, 143, 152, 140, 151, 145, 158, 139, 150, 140, 153, 152, 140];
-        const maxHr = [163, 128, 152, 155, 159, 157, 162, 159, 162, 167, 172, 175, 170, 174, 163, 168, 146, 157, 156, 148, 151, 154, 151, 154, 156, 156, 180, 145, 162, 145, 158, 149, 168, 149, 175, 164, 162, 143, 164, 146, 176, 167, 168, 162, 178, 146, 155, 147, 150, 164, 147, 178, 152, 175, 147, 162, 149, 175, 160, 152];
+        // ============================================================
+        // Supabase 設定
+        // ============================================================
+        const SUPABASE_URL = 'https://shbglvknbzczzougqhko.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoYmdsdmtuYnpjenpvdWdxaGtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNzIyNTIsImV4cCI6MjA5Mjg0ODI1Mn0.bjIRVwVn-OP6SSTKW_Osh8Om9YUzolwZYl0Pc6B_Qd4';
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // 跑步力學數據 (近期有記錄的)
-        const mechanicsDates = ['01/04', '01/12', '01/13', '01/14', '01/15', '01/19', '01/20', '01/21', '01/22', '01/24', '01/26', '01/27', '01/28', '01/30', '02/02', '02/03', '02/08', '02/20', '02/22', '02/23', '02/25', '02/26', '03/01', '03/03', '03/04', '03/05', '03/06', '03/07', '03/08', '03/10', '03/11', '03/12', '03/13', '03/14', '03/15', '03/17', '03/18', '03/19', '03/20', '03/24', '03/25', '03/26', '03/28', '03/31', '04/02', '04/03', '04/06', '04/08', '04/09', '04/10', '04/11', '04/12', '04/13', '04/15', '04/17', '04/18', '04/19', '04/20'];
-        const cadence = [127, 111, 119, 123, 129, 127, 128, 147, 149, 151, 159, 162, 163, 140, 164, 162, 165, 148, 153, 160, 159, 163, 162, 164, 156, 167, 170, 170, 169, 171, 171, 171, 168, 168, 168, 171, 175, 172, 158, 174, 161, 167, 166, 164, 163, 163, 167, 164, 165, 156, 165, 159, 170, 173, 174, 158, 171, 174];           // 步頻 spm
-        const verticalOsc = [10.0, 10.2, 10.1, 9.8, 9.5, 9.4, 9.5, 9.5, 9.5, 9.7, 9.7, 9.6, 9.7, 9.8, 9.3, 9.8, 9.5, 10.0, 10.1, 10.0, 9.9, 9.7, 9.8, 9.8, 9.4, 9.6, 9.5, 9.5, 9.5, 9.4, 9.4, 9.4, 9.4, 9.4, 9.4, 9.4, 9.2, 9.2, 9.3, 9.4, 9.5, 9.4, 9.5, 9.5, 9.5, 9.4, 9.4, 9.4, 9.5, 9.2, 9.3, 9.4, 9.3, 9.4, 9.3, 9.3, 9.4, 9.3];   // 垂直振幅 cm
-        const groundContact = [295, 320, 284, 267, 253, 232, 243, 294, 304, 299, 276, 265, 251, 278, 273, 311, 290, 297, 300, 316, 309, 291, 280, 308, 275, 298, 282, 292, 290, 287, 281, 277, 266, 265, 258, 278, 237, 270, 242, 268, 298, 293, 234, 293, 290, 289, 273, 276, 286, 264, 273, 257, 256, 249, 264, 251, 266, 269];    // 觸地時間 ms
-        const strideLength = [0.7, 0.7, 0.8, 0.8, 0.8, 0.9, 0.9, 0.8, 0.7, 0.8, 0.8, 0.8, 0.8, 0.8, 0.8, 0.7, 0.7, 0.8, 0.8, 0.7, 0.7, 0.7, 0.8, 0.7, 0.9, 0.7, 0.8, 0.7, 0.8, 0.8, 0.8, 0.9, 0.8, 0.8, 0.8, 0.9, 0.7, 0.9, 0.8, 0.9, 0.7, 0.9, 0.7, 0.7, 0.7, 0.8, 0.8, 0.7, 0.9, 0.8, 0.8, 0.7, 0.8, 0.8, 0.8, 0.8, 0.8];     // 步幅長度 m
+        // 比賽日期常數
+        const RACE_HALF = new Date('2026-12-06');  // 新竹半馬 sub-2:15
+        const RACE_10K  = new Date('2026-11-21');  // 北港 10K
 
-        // 累積距離
+        // 全域資料容器（fetch 後填入）
+        let allRuns = [];      // [{date, distance_km, pace_min_per_km, avg_hr, max_hr, cadence, ...}]
+        let allPlan = [];      // [{date, phase, weekday, workout_type, ...}]
+        let allWeights = [];   // [{date, weight_kg, body_fat_pct}]
+
+        // 從 runs 推導出的陣列（保持與舊邏輯相容）
+        let dates = [], distances = [], paces = [], avgHr = [], maxHr = [];
+        let mechanicsDates = [], cadence = [], verticalOsc = [], groundContact = [], strideLength = [];
         let cumulative = [];
-        let sum = 0;
-        distances.forEach(d => {
-            sum += d;
-            cumulative.push(sum);
-        });
+
+        // 把 'YYYY-MM-DD' 轉成 'MM/DD' 顯示用
+        function ymdToMd(ymd) {
+            const [y, m, d] = ymd.split('-');
+            return `${m}/${d}`;
+        }
+
+        // ============================================================
+        // 從 Supabase 載入全部資料
+        // ============================================================
+        async function loadDataFromSupabase() {
+            const [runsRes, planRes, weightsRes] = await Promise.all([
+                sb.from('runs').select('*').order('date', { ascending: true }),
+                sb.from('training_plan').select('*').order('date', { ascending: true }),
+                sb.from('weights').select('*').order('date', { ascending: true })
+            ]);
+
+            if (runsRes.error) console.error('runs error:', runsRes.error);
+            if (planRes.error) console.error('plan error:', planRes.error);
+            if (weightsRes.error) console.error('weights error:', weightsRes.error);
+
+            allRuns = runsRes.data || [];
+            allPlan = planRes.data || [];
+            allWeights = weightsRes.data || [];
+
+            // 推導陣列
+            dates = allRuns.map(r => ymdToMd(r.date));
+            distances = allRuns.map(r => Number(r.distance_km));
+            paces = allRuns.map(r => Number(r.pace_min_per_km));
+            avgHr = allRuns.map(r => r.avg_hr);
+            maxHr = allRuns.map(r => r.max_hr);
+
+            // 力學資料：只取有 cadence 的（mechanics 完整）
+            const runsWithMech = allRuns.filter(r => r.cadence != null);
+            mechanicsDates = runsWithMech.map(r => ymdToMd(r.date));
+            cadence = runsWithMech.map(r => r.cadence);
+            verticalOsc = runsWithMech.map(r => Number(r.vertical_osc_cm));
+            groundContact = runsWithMech.map(r => r.ground_contact_ms);
+            strideLength = runsWithMech.map(r => r.stride_length_m == null ? null : Number(r.stride_length_m));
+
+            // 累積距離
+            cumulative = [];
+            let sum = 0;
+            distances.forEach(d => { sum += d; cumulative.push(sum); });
+        }
 
         const chartConfig = {
             displayModeBar: false,
@@ -1597,6 +1532,10 @@
             }
         };
 
+        // ============================================================
+        // 圖表渲染（全部包進 renderCharts，等資料載入後呼叫）
+        // ============================================================
+        function renderCharts() {
         // 距離圖
         Plotly.newPlot('distanceChart', [{
             x: dates,
@@ -1706,27 +1645,101 @@
             hovertemplate: '%{x}<br>步幅: %{y} m<extra></extra>'
         }], {...darkLayout, height: 250}, chartConfig);
 
-        // 進度條動畫
-        setTimeout(() => {
-            document.querySelector('.progress-bar').style.width = '59%';
-        }, 500);
+        }  // === end renderCharts ===
 
-        // 比賽倒數計時
+        // ============================================================
+        // 統計卡片（從 runs 資料計算）
+        // ============================================================
+        function renderStats() {
+            const totalRuns = allRuns.length;
+            const totalDistance = allRuns.reduce((s, r) => s + Number(r.distance_km), 0);
+            const bestPaceMin = Math.min(...allRuns.map(r => Number(r.pace_min_per_km)));
+            const longest = Math.max(...allRuns.map(r => Number(r.distance_km)));
+            const latestWeight = allWeights.length ? allWeights[allWeights.length - 1].weight_kg : '—';
+
+            // pace decimal → 'M:SS'
+            const m = Math.floor(bestPaceMin);
+            const s = Math.round((bestPaceMin - m) * 60);
+            const bestPaceStr = `${m}:${String(s).padStart(2, '0')}`;
+
+            document.getElementById('stat-total-runs').textContent = totalRuns;
+            document.getElementById('stat-total-distance').textContent = totalDistance.toFixed(2) + ' km';
+            document.getElementById('stat-best-pace').textContent = bestPaceStr;
+            document.getElementById('stat-longest').textContent = longest.toFixed(2) + ' km';
+            document.getElementById('stat-current-weight').textContent = latestWeight + ' kg';
+        }
+
+        // ============================================================
+        // 月度進度（本月 + 歷史 3 個月）
+        // ============================================================
+        function renderMonthProgress() {
+            const today = new Date();
+            const ym = today.toISOString().slice(0, 7);  // 'YYYY-MM'
+
+            // 月跑量目標表（依階段）
+            const monthTargets = {
+                '2026-05': 130, '2026-06': 140, '2026-07': 150, '2026-08': 160,
+                '2026-09': 180, '2026-10': 180, '2026-11': 100, '2026-12': 80
+            };
+
+            // 本月已完成
+            const thisMonthRuns = allRuns.filter(r => r.date.startsWith(ym));
+            const thisMonthKm = thisMonthRuns.reduce((s, r) => s + Number(r.distance_km), 0);
+            const target = monthTargets[ym] || 100;
+            const pct = Math.min(100, (thisMonthKm / target * 100));
+
+            const monthName = ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'][today.getMonth()];
+            document.getElementById('current-month-title').textContent = `📊 ${monthName}進度`;
+            document.getElementById('current-month-bar').style.width = pct.toFixed(0) + '%';
+            document.getElementById('current-month-bar').textContent = pct.toFixed(0) + '%';
+            document.getElementById('current-month-target').textContent = `目標：${target} km / 月`;
+            document.getElementById('current-month-done').textContent = `已完成：${thisMonthKm.toFixed(2)} km`;
+            document.getElementById('current-month-remaining').textContent = `剩餘：${Math.max(0, target - thisMonthKm).toFixed(2)} km`;
+
+            // 歷史 3 個月（不含本月）
+            const monthsByDate = {};
+            allRuns.forEach(r => {
+                const m = r.date.slice(0, 7);
+                if (m === ym) return;
+                if (!monthsByDate[m]) monthsByDate[m] = { km: 0, count: 0 };
+                monthsByDate[m].km += Number(r.distance_km);
+                monthsByDate[m].count += 1;
+            });
+            const sortedMonths = Object.keys(monthsByDate).sort().reverse().slice(0, 3);
+
+            const historyHtml = sortedMonths.map(m => {
+                const d = monthsByDate[m];
+                const monthIdx = parseInt(m.split('-')[1]) - 1;
+                const mn = ['一','二','三','四','五','六','七','八','九','十','十一','十二'][monthIdx];
+                return `
+                <div class="progress-section" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(34, 197, 94, 0.1)); border-color: rgba(16, 185, 129, 0.3);">
+                    <h2>✅ ${mn} 月總結</h2>
+                    <div class="progress-stats">
+                        <span>跑量：${d.km.toFixed(2)} km</span>
+                        <span>次數：${d.count} 次</span>
+                        <span>平均：${(d.km / d.count).toFixed(2)} km/次</span>
+                    </div>
+                </div>`;
+            }).join('');
+            document.getElementById('monthly-history').innerHTML = historyHtml;
+        }
+
+        // ============================================================
+        // 比賽倒數計時（11/21 北港 10K + 12/6 新竹半馬）
+        // ============================================================
         function updateCountdown() {
             const today = new Date();
-            const race5k = new Date('2026-03-28');
-            const race10k = new Date('2026-04-26');
+            const days10k = Math.ceil((RACE_10K - today) / (1000 * 60 * 60 * 24));
+            const daysHalf = Math.ceil((RACE_HALF - today) / (1000 * 60 * 60 * 24));
+            const longest = allRuns.length ? Math.max(...allRuns.map(r => Number(r.distance_km))) : 0;
 
-            const days5k = Math.ceil((race5k - today) / (1000 * 60 * 60 * 24));
-            const days10k = Math.ceil((race10k - today) / (1000 * 60 * 60 * 24));
-
-            document.getElementById('countdown5k').textContent = days5k;
-            document.getElementById('countdown10k').textContent = days10k;
+            document.getElementById('countdown-10k').textContent = days10k;
+            document.getElementById('countdown-half').textContent = daysHalf;
+            document.getElementById('race-longest').textContent = longest.toFixed(2) + ' km';
         }
-        updateCountdown();
 
-        // 訓練計劃數據 (2/3 - 3/21) — 2/21 修正版（術後恢復）
-        const trainingSchedule = {
+        // 舊版 trainingSchedule 已移除，改從 Supabase training_plan 表載入
+        const _OLD_trainingSchedule_REMOVED = {
             // Week 1: 基礎期 (2/3-2/9) — 已完成
             '2026-02-03': { week: 'Week 1 基礎期', type: '輕鬆跑', icon: '🏃', distance: '4 km', pace: '8:30-9:00', hr: '< 140' },
             '2026-02-04': { week: 'Week 1 基礎期', type: '輕鬆跑', icon: '🏃', distance: '5 km', pace: '8:00-8:30', hr: '< 145' },
@@ -1849,14 +1862,26 @@
                 ]
             },
             legs: {
-                name: 'Legs', subtitle: '腿 / 臀',
+                name: 'Legs', subtitle: '膝蓋友善版（髖主導）',
                 exercises: [
-                    { name: '鳥狗式', sets: '3×10（每邊）' },
-                    { name: '槓鈴深蹲', sets: '4×10' },
+                    { name: '熱身：髖橋 + 蚌式', sets: '各 2×15' },
+                    { name: '槓鈴髖推 ⭐', sets: '4×10' },
                     { name: '羅馬尼亞硬舉', sets: '3×10' },
-                    { name: '保加利亞分腿蹲', sets: '3×10' },
-                    { name: '腿推機', sets: '3×12' },
-                    { name: '站姿提踵', sets: '3×15' }
+                    { name: '箱上深蹲（用木箱）', sets: '3×8' },
+                    { name: '腿推機（淺幅）', sets: '3×12' },
+                    { name: '單腿小腿提踵', sets: '3×15（每邊）' }
+                ]
+            },
+            'runner-specific': {
+                name: '跑者專項', subtitle: '單腿 / 髖部 / 防旋核心',
+                exercises: [
+                    { name: '90/90 髖伸展', sets: '2×30秒（每邊）' },
+                    { name: '沙發伸展', sets: '2×45秒（每邊）' },
+                    { name: '單腿 RDL', sets: '3×8（每邊）' },
+                    { name: '保加利亞分腿蹲', sets: '3×10（每邊）' },
+                    { name: 'Side Plank', sets: '3×30秒（每邊）' },
+                    { name: 'Pallof Press', sets: '3×12（每邊）' },
+                    { name: '單腿提踵', sets: '3×15（每邊）' }
                 ]
             },
             core: {
@@ -1865,7 +1890,6 @@
                     { name: '死蟲式', sets: '3×10（每邊）' },
                     { name: '鳥狗式', sets: '3×10（每邊）' },
                     { name: '壺鈴擺盪', sets: '3×15' },
-                    { name: '農夫走路', sets: '3×30m' },
                     { name: 'TRX 划船', sets: '3×12' },
                     { name: '捲腹', sets: '3×20' }
                 ]
@@ -1883,7 +1907,21 @@
             6: { gym: null, run: true }
         };
 
-        // 顯示今日行程
+        // 課表類型中文對照
+        function workoutTypeName(type) {
+            const map = {
+                'rest': '休息日',
+                'easy': '輕鬆跑',
+                'tempo': '節奏跑',
+                'interval': '間歇訓練',
+                'long': '長跑',
+                'race': '比賽',
+                'recovery': '恢復跑'
+            };
+            return map[type] || type || '自主';
+        }
+
+        // 顯示今日行程（從 Supabase allPlan 撈）
         function displayTodayTraining() {
             const today = new Date();
             const dateStr = today.toISOString().split('T')[0];
@@ -1894,43 +1932,38 @@
 
             document.getElementById('todayDate').textContent = `${month}/${day} (${weekday})`;
 
-            const schedule = dailySchedule[today.getDay()];
-            const workout = trainingSchedule[dateStr];
+            const plan = allPlan.find(p => p.date === dateStr);
             const container = document.getElementById('workoutContent');
+            const isRunDay = plan && plan.workout_type !== 'rest';
+            const wTypeName = plan ? workoutTypeName(plan.workout_type) : '自主';
 
             let html = '';
 
             // Timeline tags
             html += '<div class="today-timeline">';
-            if (schedule.gym) {
-                const gym = gymRoutines[schedule.gym];
-                html += `<div class="time-tag gym">10:00 🏋️ ${gym.name}</div>`;
-            }
-            if (schedule.gym) {
+            if (plan && plan.gym) {
+                const gym = gymRoutines[plan.gym];
+                html += `<div class="time-tag gym">10:00 🏋️ ${gym ? gym.name : plan.gym}</div>`;
                 html += '<div class="time-tag dev">12:00-18:00 💻 開發</div>';
             } else {
                 html += '<div class="time-tag dev">12:30-18:00 💻 開發</div>';
             }
-            if (!schedule.run) {
+            if (!isRunDay) {
                 html += '<div class="time-tag dev">19:00-23:00 💻 開發</div>';
                 html += '<div class="time-tag rest-tag">😴 休跑</div>';
             } else {
                 html += '<div class="time-tag dev">19:00-21:00 💻 開發</div>';
-                if (workout && workout.race) {
-                    html += `<div class="time-tag race">21:00 🏁 ${workout.type}</div>`;
-                } else if (workout && !workout.rest) {
-                    html += `<div class="time-tag run">21:00 🏃 ${workout.type}</div>`;
-                } else if (workout && workout.rest) {
-                    html += '<div class="time-tag rest-tag">😴 休跑</div>';
+                if (plan.workout_type === 'race') {
+                    html += `<div class="time-tag race">21:00 🏁 ${wTypeName}</div>`;
                 } else {
-                    html += '<div class="time-tag run">21:00 🏃 跑步</div>';
+                    html += `<div class="time-tag run">21:00 🏃 ${wTypeName}</div>`;
                 }
             }
             html += '</div>';
 
             // Gym section
-            if (schedule.gym) {
-                const gym = gymRoutines[schedule.gym];
+            if (plan && plan.gym && gymRoutines[plan.gym]) {
+                const gym = gymRoutines[plan.gym];
                 html += '<div class="today-gym">';
                 html += `<h3>🏋️ 今日健身：${gym.name} — ${gym.subtitle}</h3>`;
                 html += '<div class="exercises">';
@@ -1945,39 +1978,84 @@
             }
 
             // Running section
-            if (workout && !workout.rest && schedule.run) {
-                const raceStyle = workout.race ? 'border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.08);' : '';
+            if (isRunDay) {
+                const isRace = plan.workout_type === 'race';
+                const raceStyle = isRace ? 'border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.08);' : '';
                 html += `<div class="today-run" style="${raceStyle}">`;
-                html += `<h3>${workout.race ? '🏁' : '🏃'} 今日跑步：${workout.type}${workout.week ? ' — ' + workout.week : ''}</h3>`;
+                html += `<h3>${isRace ? '🏁' : '🏃'} 今日跑步：${wTypeName}${plan.phase ? ' — ' + plan.phase : ''}</h3>`;
                 html += '<div class="run-details">';
-                html += `<div class="run-detail"><div class="label">距離</div><div class="value">${workout.distance}</div></div>`;
-                html += `<div class="run-detail"><div class="label">配速/內容</div><div class="value">${workout.pace}</div></div>`;
-                html += `<div class="run-detail"><div class="label">心率目標</div><div class="value">${workout.hr}</div></div>`;
+                html += `<div class="run-detail"><div class="label">距離</div><div class="value">${plan.distance_target_km ? Number(plan.distance_target_km).toFixed(1) + ' km' : '—'}</div></div>`;
+                html += `<div class="run-detail"><div class="label">配速/內容</div><div class="value">${plan.pace_target || '—'}</div></div>`;
+                html += `<div class="run-detail"><div class="label">心率目標</div><div class="value">${plan.hr_target || '—'}</div></div>`;
                 html += '</div>';
-                if (workout.milestone) {
-                    html += `<div style="margin-top: 12px; padding: 10px 15px; background: rgba(16, 185, 129, 0.2); border-radius: 8px; color: #10b981; font-weight: 600;">🎯 ${workout.milestone}</div>`;
+                if (plan.notes) {
+                    html += `<div style="margin-top: 12px; padding: 10px 15px; background: rgba(16, 185, 129, 0.2); border-radius: 8px; color: #10b981; font-weight: 600;">📝 ${plan.notes}</div>`;
                 }
                 html += '</div>';
-            } else if (!schedule.run) {
+            } else if (plan && plan.workout_type === 'rest') {
                 html += '<div class="today-run" style="border-color: rgba(100, 116, 139, 0.2); background: rgba(100, 116, 139, 0.05);">';
                 html += '<h3>😴 今日休跑</h3>';
-                html += `<p style="color: #94a3b8; font-size: 0.9rem;">讓身體充分恢復</p>`;
-                html += '</div>';
-            } else if (workout && workout.rest) {
-                html += '<div class="today-run" style="border-color: rgba(100, 116, 139, 0.2); background: rgba(100, 116, 139, 0.05);">';
-                html += '<h3>😴 今日休跑</h3>';
-                html += `<p style="color: #94a3b8; font-size: 0.9rem;">${workout.note || '讓身體充分恢復'}</p>`;
+                html += `<p style="color: #94a3b8; font-size: 0.9rem;">${plan.notes || '讓身體充分恢復'}</p>`;
                 html += '</div>';
             } else {
                 html += '<div class="today-run">';
                 html += '<h3>🏃 今日跑步：自主安排</h3>';
-                html += '<p style="color: #94a3b8; font-size: 0.9rem;">可安排輕鬆跑或依體感調整</p>';
+                html += '<p style="color: #94a3b8; font-size: 0.9rem;">本日無計劃，可依體感安排輕鬆跑或休息</p>';
                 html += '</div>';
             }
 
             container.innerHTML = html;
         }
-        displayTodayTraining();
+
+        // 本週訓練（顯示未來 7 天）
+        function renderThisWeek() {
+            const today = new Date();
+            const ymd = today.toISOString().split('T')[0];
+            const days = [];
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(today);
+                d.setDate(d.getDate() + i);
+                days.push(d.toISOString().split('T')[0]);
+            }
+            const thisWeekPlans = days.map(d => ({
+                date: d,
+                plan: allPlan.find(p => p.date === d)
+            }));
+
+            // Phase + countdown
+            const todayPlan = thisWeekPlans[0].plan;
+            const phase = todayPlan ? todayPlan.phase : '—';
+            const daysToHalf = Math.ceil((RACE_HALF - today) / (1000 * 60 * 60 * 24));
+            document.getElementById('this-week-phase').textContent =
+                `階段：${phase} · 距離 12/6 半馬：${daysToHalf} 天`;
+
+            // 7-day cards
+            const html = thisWeekPlans.map(({date, plan}) => {
+                const md = ymdToMd(date).replace(/^0/, '');
+                const wd = ['日','一','二','三','四','五','六'][new Date(date).getDay()];
+                if (!plan) {
+                    return `<div class="week-card"><h4>${md} (${wd})</h4>
+                        <div class="workout-item"><div class="day">—</div>
+                        <div class="details"><div class="type">無計劃</div></div></div></div>`;
+                }
+                const t = workoutTypeName(plan.workout_type);
+                const isRest = plan.workout_type === 'rest';
+                const dist = plan.distance_target_km ? Number(plan.distance_target_km).toFixed(1) + ' km' : '';
+                const pace = plan.pace_target || '';
+                const gymTag = plan.gym ? `<span style="background:rgba(239,68,68,0.15);color:#fca5a5;padding:2px 6px;border-radius:4px;font-size:11px;margin-left:6px;">🏋️ ${plan.gym}</span>` : '';
+                return `<div class="week-card">
+                    <h4>${md} (${wd})${gymTag}</h4>
+                    <div class="workout-item">
+                        <div class="day">${isRest ? '😴' : '🏃'}</div>
+                        <div class="details">
+                            <div class="type">${t}</div>
+                            <div class="desc">${dist} ${pace}${plan.notes ? ' · ' + plan.notes : ''}</div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+            document.getElementById('this-week-workouts').innerHTML = html;
+        }
 
         // === Tab 切換 ===
         let regressionRendered = false;
@@ -2122,6 +2200,28 @@
                 +'以 3/28 比賽配速 6:36 預測，心率約 <span style="color:#22c55e;font-weight:600">'+Math.round(predHr636)+'-'+Math.round(predHr636+5)+' bpm</span>，'
                 +'屬於 Zone 3-4 可持續範圍，<span style="color:#22c55e;font-weight:700">sub-33 目標可行</span>。';
         }
+
+        // ============================================================
+        // INIT — 載入 Supabase 資料後渲染所有圖表
+        // ============================================================
+        async function init() {
+            try {
+                await loadDataFromSupabase();
+                console.log('Loaded:', allRuns.length, 'runs,', allPlan.length, 'plan days,', allWeights.length, 'weights');
+
+                renderStats();
+                renderMonthProgress();
+                updateCountdown();
+                renderCharts();
+                displayTodayTraining();
+                renderThisWeek();
+            } catch (err) {
+                console.error('Init failed:', err);
+                document.body.insertAdjacentHTML('afterbegin',
+                    '<div style="background:#7f1d1d;color:#fff;padding:12px;text-align:center;">載入失敗：' + err.message + '</div>');
+            }
+        }
+        init();
     </script>
 </body>
 </html>

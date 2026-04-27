@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>跑步數據 3D 回歸分析</title>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #1a1a1c; color: #d4d4d4;
+  }
+  .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+  h1 { font-size: 24px; color: #fff; margin-bottom: 4px; }
+  .subtitle { font-size: 14px; color: #888; margin-bottom: 24px; }
+  .chart-box {
+    background: #242426; border-radius: 8px; padding: 16px; margin-bottom: 24px;
+  }
+  .chart-title { font-size: 16px; color: #5F9EA0; margin-bottom: 8px; font-weight: 600; }
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px; margin-bottom: 24px;
+  }
+  .stat-card {
+    background: #242426; border-radius: 8px; padding: 16px;
+  }
+  .stat-card h3 { font-size: 14px; color: #5F9EA0; margin-bottom: 12px; }
+  .stat-row {
+    display: flex; justify-content: space-between; padding: 6px 0;
+    border-bottom: 1px solid #333; font-size: 13px;
+  }
+  .stat-row:last-child { border: none; }
+  .stat-label { color: #888; }
+  .stat-value { color: #fff; font-weight: 600; }
+  .insight {
+    background: rgba(95, 158, 160, 0.1); border: 1px solid rgba(95, 158, 160, 0.3);
+    border-radius: 8px; padding: 16px; margin-bottom: 24px;
+  }
+  .insight h3 { color: #5F9EA0; font-size: 15px; margin-bottom: 8px; }
+  .insight p { font-size: 13px; line-height: 1.6; color: #bbb; }
+  .insight .highlight { color: #22c55e; font-weight: 600; }
+  .insight .warn { color: #eab308; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>跑步數據 3D 回歸分析</h1>
+<p class="subtitle">配速 × 心率 × 時間 — 觀察有氧能力的進步軌跡</p>
+
+<!-- 3D 散佈圖 -->
+<div class="chart-box">
+  <div class="chart-title">3D 視覺化：配速 vs 心率 vs 訓練天數</div>
+  <div id="plot3d" style="width:100%; height:550px;"></div>
+</div>
+
+<!-- 2D 回歸（早期 vs 近期） -->
+<div class="chart-box">
+  <div class="chart-title">2D 回歸：同配速下心率的變化（早期 vs 近期）</div>
+  <div id="plot2d" style="width:100%; height:450px;"></div>
+</div>
+
+<!-- 心率效率趨勢 -->
+<div class="chart-box">
+  <div class="chart-title">心率效率指數（HR / 速度）趨勢 — 越低代表越有效率</div>
+  <div id="plotEfficiency" style="width:100%; height:350px;"></div>
+</div>
+
+<!-- 統計數據 -->
+<div class="stats-grid" id="statsGrid"></div>
+
+<!-- 洞察 -->
+<div class="insight" id="insightBox"></div>
+
+</div>
+
+<script>
+// === 原始數據 ===
+const dates = ['01/04','01/07','01/12','01/13','01/14','01/15','01/19','01/20','01/21','01/22','01/24','01/26','01/27','01/28','01/30','02/02','02/03','02/08','02/20','02/22','02/23','02/25','02/26','02/28','03/01','03/03','03/04','03/05','03/06','03/07','03/08','03/10','03/11'];
+const paces = [10.76,11.14,12.30,10.76,9.98,9.46,8.86,8.63,9.33,8.76,8.26,7.54,7.37,6.87,8.82,7.18,8.58,7.93,9.67,8.60,8.85,8.80,8.43,8.72,7.50,7.88,7.25,8.03,7.48,7.68,7.43,7.28,6.92];
+const avgHr = [133,100,127,125,132,133,137,135,137,144,150,153,156,164,151,161,139,148,137,139,139,141,145,144,150,138,155,139,151,139,146,143,152];
+const distances = [3.97,1.46,1.81,3.20,3.23,3.42,3.39,3.61,3.39,3.43,3.86,4.10,5.07,5.12,6.23,6.03,4.11,6.11,4.09,3.03,4.08,4.05,5.01,4.00,6.12,4.11,5.01,4.05,5.02,4.12,7.01,4.02,5.03];
+
+// 計算訓練天數（從第一天算起）
+function parseDate(s) {
+  const [m, d] = s.split('/').map(Number);
+  return new Date(2026, m - 1, d);
+}
+const startDate = parseDate(dates[0]);
+const dayNumbers = dates.map(d => Math.round((parseDate(d) - startDate) / 86400000));
+
+// 速度 (km/h) = 60 / pace
+const speeds = paces.map(p => 60 / p);
+
+// === 線性回歸函數 ===
+function linearRegression(x, y) {
+  const n = x.length;
+  const sumX = x.reduce((a, b) => a + b, 0);
+  const sumY = y.reduce((a, b) => a + b, 0);
+  const sumXY = x.reduce((a, b, i) => a + b * y[i], 0);
+  const sumX2 = x.reduce((a, b) => a + b * b, 0);
+  const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+  const intercept = (sumY - slope * sumX) / n;
+  const yMean = sumY / n;
+  const ssRes = y.reduce((a, b, i) => a + (b - (slope * x[i] + intercept)) ** 2, 0);
+  const ssTot = y.reduce((a, b) => a + (b - yMean) ** 2, 0);
+  const r2 = 1 - ssRes / ssTot;
+  return { slope, intercept, r2 };
+}
+
+// === 多元回歸：HR = a*pace + b*day + c ===
+function multiRegression(x1, x2, y) {
+  const n = x1.length;
+  let s1=0,s2=0,sy=0,s11=0,s22=0,s12=0,s1y=0,s2y=0;
+  for (let i = 0; i < n; i++) {
+    s1+=x1[i]; s2+=x2[i]; sy+=y[i];
+    s11+=x1[i]*x1[i]; s22+=x2[i]*x2[i]; s12+=x1[i]*x2[i];
+    s1y+=x1[i]*y[i]; s2y+=x2[i]*y[i];
+  }
+  // Solve normal equations
+  const A = [[s11, s12, s1], [s12, s22, s2], [s1, s2, n]];
+  const B = [s1y, s2y, sy];
+  // Gaussian elimination
+  for (let i = 0; i < 3; i++) {
+    let maxRow = i;
+    for (let k = i+1; k < 3; k++) if (Math.abs(A[k][i]) > Math.abs(A[maxRow][i])) maxRow = k;
+    [A[i], A[maxRow]] = [A[maxRow], A[i]];
+    [B[i], B[maxRow]] = [B[maxRow], B[i]];
+    for (let k = i+1; k < 3; k++) {
+      const f = A[k][i] / A[i][i];
+      for (let j = i; j < 3; j++) A[k][j] -= f * A[i][j];
+      B[k] -= f * B[i];
+    }
+  }
+  const coef = [0, 0, 0];
+  for (let i = 2; i >= 0; i--) {
+    coef[i] = B[i];
+    for (let j = i+1; j < 3; j++) coef[i] -= A[i][j] * coef[j];
+    coef[i] /= A[i][i];
+  }
+  // R²
+  const yMean = sy / n;
+  let ssRes = 0, ssTot = 0;
+  for (let i = 0; i < n; i++) {
+    const pred = coef[0]*x1[i] + coef[1]*x2[i] + coef[2];
+    ssRes += (y[i] - pred) ** 2;
+    ssTot += (y[i] - yMean) ** 2;
+  }
+  return { a: coef[0], b: coef[1], c: coef[2], r2: 1 - ssRes/ssTot };
+}
+
+// === 計算回歸 ===
+const reg2d = linearRegression(paces, avgHr);
+const regMulti = multiRegression(paces, dayNumbers, avgHr);
+
+// 分組：前半 vs 後半
+const mid = Math.floor(dates.length / 2);
+const earlyPaces = paces.slice(0, mid);
+const earlyHr = avgHr.slice(0, mid);
+const latePaces = paces.slice(mid);
+const lateHr = avgHr.slice(mid);
+const regEarly = linearRegression(earlyPaces, earlyHr);
+const regLate = linearRegression(latePaces, lateHr);
+
+// 心率效率指數
+const hrEfficiency = avgHr.map((hr, i) => hr / speeds[i]);
+
+// === 3D 散佈圖 ===
+const colors = dayNumbers.map(d => d);
+const scatter3d = {
+  x: paces, y: dayNumbers, z: avgHr,
+  mode: 'markers',
+  type: 'scatter3d',
+  marker: {
+    size: distances.map(d => Math.max(4, d * 1.5)),
+    color: colors,
+    colorscale: [[0,'#ef4444'],[0.5,'#eab308'],[1,'#22c55e']],
+    colorbar: { title: '訓練天數', tickfont: { color: '#888' }, titlefont: { color: '#888' } },
+    opacity: 0.85,
+    line: { width: 0.5, color: '#fff' }
+  },
+  text: dates.map((d, i) => `${d}<br>配速: ${paces[i].toFixed(2)}<br>心率: ${avgHr[i]}<br>距離: ${distances[i]}km`),
+  hoverinfo: 'text',
+  name: '跑步數據'
+};
+
+// 回歸平面
+const paceRange = [6.5, 12.5];
+const dayRange = [0, dayNumbers[dayNumbers.length-1]];
+const paceGrid = [], dayGrid = [], hrGrid = [];
+for (let p = paceRange[0]; p <= paceRange[1]; p += 0.5) {
+  const row1 = [], row2 = [], row3 = [];
+  for (let d = dayRange[0]; d <= dayRange[1]; d += 5) {
+    row1.push(p); row2.push(d);
+    row3.push(regMulti.a * p + regMulti.b * d + regMulti.c);
+  }
+  paceGrid.push(row1); dayGrid.push(row2); hrGrid.push(row3);
+}
+
+const surface = {
+  x: paceGrid, y: dayGrid, z: hrGrid,
+  type: 'surface',
+  opacity: 0.4,
+  colorscale: [[0,'rgba(95,158,160,0.3)'],[1,'rgba(95,158,160,0.6)']],
+  showscale: false,
+  name: '回歸平面'
+};
+
+Plotly.newPlot('plot3d', [scatter3d, surface], {
+  scene: {
+    xaxis: { title: '配速 (min/km)', color: '#888', gridcolor: '#333', autorange: 'reversed' },
+    yaxis: { title: '訓練天數', color: '#888', gridcolor: '#333' },
+    zaxis: { title: '平均心率 (bpm)', color: '#888', gridcolor: '#333' },
+    bgcolor: '#242426',
+    camera: { eye: { x: 1.8, y: -1.5, z: 0.8 } }
+  },
+  paper_bgcolor: '#242426',
+  font: { color: '#888' },
+  margin: { l: 0, r: 0, t: 20, b: 0 },
+  showlegend: false
+}, { responsive: true });
+
+// === 2D 回歸圖（早期 vs 近期）===
+const xLine = [6.5, 12.5];
+
+Plotly.newPlot('plot2d', [
+  // 早期數據點
+  {
+    x: earlyPaces, y: earlyHr,
+    mode: 'markers', type: 'scatter',
+    marker: { color: '#ef4444', size: 10, opacity: 0.7 },
+    name: `早期 (${dates[0]}-${dates[mid-1]})`,
+    text: dates.slice(0, mid),
+    hovertemplate: '%{text}<br>配速: %{x:.2f}<br>心率: %{y}<extra></extra>'
+  },
+  // 近期數據點
+  {
+    x: latePaces, y: lateHr,
+    mode: 'markers', type: 'scatter',
+    marker: { color: '#22c55e', size: 10, opacity: 0.7 },
+    name: `近期 (${dates[mid]}-${dates[dates.length-1]})`,
+    text: dates.slice(mid),
+    hovertemplate: '%{text}<br>配速: %{x:.2f}<br>心率: %{y}<extra></extra>'
+  },
+  // 早期回歸線
+  {
+    x: xLine, y: xLine.map(x => regEarly.slope * x + regEarly.intercept),
+    mode: 'lines', type: 'scatter',
+    line: { color: '#ef4444', width: 2, dash: 'dash' },
+    name: `早期趨勢 (R²=${regEarly.r2.toFixed(3)})`
+  },
+  // 近期回歸線
+  {
+    x: xLine, y: xLine.map(x => regLate.slope * x + regLate.intercept),
+    mode: 'lines', type: 'scatter',
+    line: { color: '#22c55e', width: 2, dash: 'dash' },
+    name: `近期趨勢 (R²=${regLate.r2.toFixed(3)})`
+  }
+], {
+  xaxis: { title: '配速 (min/km, 越左越快)', color: '#888', gridcolor: '#333', autorange: 'reversed' },
+  yaxis: { title: '平均心率 (bpm)', color: '#888', gridcolor: '#333' },
+  paper_bgcolor: '#242426', plot_bgcolor: '#242426',
+  font: { color: '#888' },
+  legend: { x: 0.02, y: 0.98, bgcolor: 'rgba(0,0,0,0.5)' },
+  margin: { l: 60, r: 20, t: 20, b: 50 },
+  annotations: [{
+    x: 8.0, y: regEarly.slope * 8.0 + regEarly.intercept,
+    ax: 40, ay: -30,
+    text: `早期 8:00 配速<br>心率 ≈ ${Math.round(regEarly.slope * 8.0 + regEarly.intercept)}`,
+    showarrow: true, arrowcolor: '#ef4444',
+    font: { color: '#ef4444', size: 11 },
+    bgcolor: 'rgba(0,0,0,0.6)', bordercolor: '#ef4444'
+  }, {
+    x: 8.0, y: regLate.slope * 8.0 + regLate.intercept,
+    ax: 40, ay: 30,
+    text: `近期 8:00 配速<br>心率 ≈ ${Math.round(regLate.slope * 8.0 + regLate.intercept)}`,
+    showarrow: true, arrowcolor: '#22c55e',
+    font: { color: '#22c55e', size: 11 },
+    bgcolor: 'rgba(0,0,0,0.6)', bordercolor: '#22c55e'
+  }]
+}, { responsive: true });
+
+// === 心率效率趨勢 ===
+const regEff = linearRegression(dayNumbers, hrEfficiency);
+
+Plotly.newPlot('plotEfficiency', [
+  {
+    x: dates, y: hrEfficiency,
+    mode: 'markers+lines', type: 'scatter',
+    marker: { color: hrEfficiency.map(e => e), colorscale: [[0,'#22c55e'],[1,'#ef4444']], size: 8 },
+    line: { color: 'rgba(95,158,160,0.3)', width: 1 },
+    name: 'HR/速度',
+    hovertemplate: '%{x}<br>效率指數: %{y:.1f}<extra></extra>'
+  },
+  {
+    x: [dates[0], dates[dates.length-1]],
+    y: [regEff.slope * dayNumbers[0] + regEff.intercept, regEff.slope * dayNumbers[dayNumbers.length-1] + regEff.intercept],
+    mode: 'lines', type: 'scatter',
+    line: { color: '#5F9EA0', width: 2, dash: 'dash' },
+    name: `趨勢線 (R²=${regEff.r2.toFixed(3)})`
+  }
+], {
+  xaxis: { color: '#888', gridcolor: '#333' },
+  yaxis: { title: 'HR / 速度 (越低越好)', color: '#888', gridcolor: '#333' },
+  paper_bgcolor: '#242426', plot_bgcolor: '#242426',
+  font: { color: '#888' },
+  legend: { x: 0.02, y: 0.98, bgcolor: 'rgba(0,0,0,0.5)' },
+  margin: { l: 60, r: 20, t: 20, b: 50 }
+}, { responsive: true });
+
+// === 統計卡片 ===
+const hrAt8Early = regEarly.slope * 8.0 + regEarly.intercept;
+const hrAt8Late = regLate.slope * 8.0 + regLate.intercept;
+const hrDrop = hrAt8Early - hrAt8Late;
+
+document.getElementById('statsGrid').innerHTML = `
+  <div class="stat-card">
+    <h3>2D 線性回歸（配速 vs 心率）</h3>
+    <div class="stat-row"><span class="stat-label">斜率</span><span class="stat-value">${reg2d.slope.toFixed(2)} bpm per min/km</span></div>
+    <div class="stat-row"><span class="stat-label">R²</span><span class="stat-value">${reg2d.r2.toFixed(4)}</span></div>
+    <div class="stat-row"><span class="stat-label">意義</span><span class="stat-value">配速快 1 min/km → 心率 +${Math.abs(reg2d.slope).toFixed(1)} bpm</span></div>
+  </div>
+  <div class="stat-card">
+    <h3>3D 多元回歸（配速 + 時間 → 心率）</h3>
+    <div class="stat-row"><span class="stat-label">配速係數</span><span class="stat-value">${regMulti.a.toFixed(2)}</span></div>
+    <div class="stat-row"><span class="stat-label">時間係數</span><span class="stat-value">${regMulti.b.toFixed(4)} bpm/天</span></div>
+    <div class="stat-row"><span class="stat-label">R²</span><span class="stat-value">${regMulti.r2.toFixed(4)}</span></div>
+    <div class="stat-row"><span class="stat-label">意義</span><span class="stat-value">每訓練一天，同配速心率降 ${Math.abs(regMulti.b).toFixed(2)} bpm</span></div>
+  </div>
+  <div class="stat-card">
+    <h3>有氧進步量化</h3>
+    <div class="stat-row"><span class="stat-label">早期 8:00 配速心率</span><span class="stat-value" style="color:#ef4444">${Math.round(hrAt8Early)} bpm</span></div>
+    <div class="stat-row"><span class="stat-label">近期 8:00 配速心率</span><span class="stat-value" style="color:#22c55e">${Math.round(hrAt8Late)} bpm</span></div>
+    <div class="stat-row"><span class="stat-label">心率下降</span><span class="stat-value" style="color:#22c55e">-${Math.round(hrDrop)} bpm</span></div>
+    <div class="stat-row"><span class="stat-label">訓練天數</span><span class="stat-value">${dayNumbers[dayNumbers.length-1]} 天</span></div>
+  </div>
+`;
+
+// === 洞察 ===
+const totalDays = dayNumbers[dayNumbers.length-1];
+const hrDropPerMonth = (hrDrop / totalDays) * 30;
+
+document.getElementById('insightBox').innerHTML = `
+  <h3>數據洞察</h3>
+  <p>
+    <span class="highlight">3D 回歸平面</span>顯示：在控制配速的情況下，每訓練一天，心率平均下降
+    <span class="highlight">${Math.abs(regMulti.b).toFixed(2)} bpm</span>。
+    經過 ${totalDays} 天的訓練，同樣跑 8:00 配速，心率從
+    <span class="warn">${Math.round(hrAt8Early)} bpm</span> 降到
+    <span class="highlight">${Math.round(hrAt8Late)} bpm</span>，
+    下降了 <span class="highlight">${Math.round(hrDrop)} bpm</span>
+    （約每月 ${hrDropPerMonth.toFixed(1)} bpm）。
+  </p>
+  <p style="margin-top: 8px;">
+    這代表你的<span class="highlight">心臟每次搏動能輸出更多血液</span>，
+    有氧基礎確實在變強。以 3/28 比賽配速 6:36 來預測，
+    你的心率大約會在 <span class="highlight">${Math.round(regLate.slope * 6.6 + regLate.intercept)}-${Math.round(regLate.slope * 6.6 + regLate.intercept + 5)} bpm</span>，
+    屬於可持續的 Zone 3-4 範圍，sub-33 是可行的。
+  </p>
+`;
+</script>
+</body>
+</html>
