@@ -831,42 +831,16 @@
         <div class="race-section">
             <h2>🏁 比賽目標</h2>
             <div class="race-grid">
-                <div class="race-card">
-                    <div class="date">2026 年 11 月 21 日（六）</div>
-                    <div class="race-name">北港馬拉松 10K</div>
-                    <div class="race-stats">
-                        <div class="race-stat">
-                            <div class="stat-label">角色</div>
-                            <div class="stat-value">測試賽</div>
-                        </div>
-                        <div class="race-stat">
-                            <div class="stat-label">目標時間</div>
-                            <div class="stat-value">~70 分</div>
-                        </div>
-                        <div class="race-stat">
-                            <div class="stat-label">目標配速</div>
-                            <div class="stat-value">6:50-7:00</div>
-                        </div>
-                        <div class="race-stat">
-                            <div class="stat-label">10K PB</div>
-                            <div class="stat-value">1:10:36 (04/26)</div>
-                        </div>
-                    </div>
-                    <div class="countdown">
-                        <div class="days" id="countdown-10k">—</div>
-                        <div class="days-label">天後比賽</div>
-                    </div>
-                </div>
                 <div class="race-card highlight">
-                    <div class="date">2026 年 12 月 6 日（日）</div>
-                    <div class="race-name">新竹城市馬半馬 (AIMS)</div>
+                    <div class="date">2026 年 10 月 25 日（日）</div>
+                    <div class="race-name">長榮航空半馬 (AIMS)</div>
                     <div class="race-stats">
                         <div class="race-stat">
                             <div class="stat-label">A 目標</div>
                             <div class="stat-value">sub-2:15 ⭐</div>
                         </div>
                         <div class="race-stat">
-                            <div class="stat-label">B 目標</div>
+                            <div class="stat-label">B 目標（熱天）</div>
                             <div class="stat-value">sub-2:20</div>
                         </div>
                         <div class="race-stat">
@@ -883,13 +857,65 @@
                         <div class="days-label">天後比賽</div>
                     </div>
                 </div>
+                <div class="race-card">
+                    <div class="date">2026 年 11 月 21 日（六）</div>
+                    <div class="race-name">北港馬拉松 10K</div>
+                    <div class="race-stats">
+                        <div class="race-stat">
+                            <div class="stat-label">角色</div>
+                            <div class="stat-value">Fun Run</div>
+                        </div>
+                        <div class="race-stat">
+                            <div class="stat-label">目標</div>
+                            <div class="stat-value">享受家鄉賽</div>
+                        </div>
+                        <div class="race-stat">
+                            <div class="stat-label">配速</div>
+                            <div class="stat-value">6:50-7:00</div>
+                        </div>
+                        <div class="race-stat">
+                            <div class="stat-label">10K PB</div>
+                            <div class="stat-value">1:10:36 (04/26)</div>
+                        </div>
+                    </div>
+                    <div class="countdown">
+                        <div class="days" id="countdown-10k">—</div>
+                        <div class="days-label">天後比賽</div>
+                    </div>
+                </div>
+                <div class="race-card">
+                    <div class="date">2026 年 12 月 6 日（日）</div>
+                    <div class="race-name">新竹城市馬半馬 (AIMS)</div>
+                    <div class="race-stats">
+                        <div class="race-stat">
+                            <div class="stat-label">角色</div>
+                            <div class="stat-value">PR Backup</div>
+                        </div>
+                        <div class="race-stat">
+                            <div class="stat-label">啟動條件</div>
+                            <div class="stat-value">10/25 沒打到</div>
+                        </div>
+                        <div class="race-stat">
+                            <div class="stat-label">優勢</div>
+                            <div class="stat-value">15-20°C 涼爽</div>
+                        </div>
+                        <div class="race-stat">
+                            <div class="stat-label">否則</div>
+                            <div class="stat-value">純 Fun Run</div>
+                        </div>
+                    </div>
+                    <div class="countdown">
+                        <div class="days" id="countdown-half-backup">—</div>
+                        <div class="days-label">天後比賽</div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- 本週訓練（從 Supabase training_plan 動態載入） -->
         <div class="training-plan">
             <h2>📋 本週訓練（半馬 sub-2:15 計劃）</h2>
-            <p style="color: #94a3b8; margin-bottom: 16px;" id="this-week-phase">階段：— · 距離 12/6 半馬：— 天</p>
+            <p style="color: #94a3b8; margin-bottom: 16px;" id="this-week-phase">階段：— · 距離 10/25 半馬：— 天</p>
             <div class="week-grid" id="this-week-workouts">
                 <!-- 動態填入：7 天課表 -->
             </div>
@@ -1380,8 +1406,9 @@
         const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // 比賽日期常數
-        const RACE_HALF = new Date('2026-12-06');  // 新竹半馬 sub-2:15
-        const RACE_10K  = new Date('2026-11-21');  // 北港 10K
+        const RACE_HALF        = new Date('2026-10-25');  // 長榮航空半馬 sub-2:15（主賽事）
+        const RACE_HALF_BACKUP = new Date('2026-12-06');  // 新竹半馬 PR backup
+        const RACE_10K         = new Date('2026-11-21');  // 北港 10K fun run
 
         // 全域資料容器（fetch 後填入）
         let allRuns = [];      // [{date, distance_km, pace_min_per_km, avg_hr, max_hr, cadence, ...}]
@@ -1658,16 +1685,18 @@
         }
 
         // ============================================================
-        // 比賽倒數計時（11/21 北港 10K + 12/6 新竹半馬）
+        // 比賽倒數計時（10/25 長榮主賽事 + 11/21 北港 10K + 12/6 新竹 PR backup）
         // ============================================================
         function updateCountdown() {
             const today = new Date();
             const days10k = Math.ceil((RACE_10K - today) / (1000 * 60 * 60 * 24));
             const daysHalf = Math.ceil((RACE_HALF - today) / (1000 * 60 * 60 * 24));
+            const daysHalfBackup = Math.ceil((RACE_HALF_BACKUP - today) / (1000 * 60 * 60 * 24));
             const longest = allRuns.length ? Math.max(...allRuns.map(r => Number(r.distance_km))) : 0;
 
             document.getElementById('countdown-10k').textContent = days10k;
             document.getElementById('countdown-half').textContent = daysHalf;
+            document.getElementById('countdown-half-backup').textContent = daysHalfBackup;
             document.getElementById('race-longest').textContent = longest.toFixed(2) + ' km';
         }
 
@@ -1960,7 +1989,7 @@
             const phase = todayPlan ? todayPlan.phase : '—';
             const daysToHalf = Math.ceil((RACE_HALF - today) / (1000 * 60 * 60 * 24));
             document.getElementById('this-week-phase').textContent =
-                `階段：${phase} · 距離 12/6 半馬：${daysToHalf} 天`;
+                `階段：${phase} · 距離 10/25 半馬：${daysToHalf} 天`;
 
             // 7-day cards
             const html = thisWeekPlans.map(({date, plan}) => {
@@ -2096,7 +2125,7 @@
                 annotations:[
                     {x:7.0,y:regE.slope*7+regE.intercept,ax:60,ay:-30,text:'早期 7:00→'+Math.round(regE.slope*7+regE.intercept)+'bpm',showarrow:true,arrowcolor:'#ff453a',font:{color:'#ff453a',size:10},bgcolor:'rgba(28,28,30,0.9)',bordercolor:'#ff453a',borderpad:4},
                     {x:7.0,y:regL.slope*7+regL.intercept,ax:60,ay:30,text:'近期 7:00→'+Math.round(regL.slope*7+regL.intercept)+'bpm',showarrow:true,arrowcolor:'#30d158',font:{color:'#30d158',size:10},bgcolor:'rgba(28,28,30,0.9)',bordercolor:'#30d158',borderpad:4},
-                    {x:HMP_PACE,y:regL.slope*HMP_PACE+regL.intercept,ax:-60,ay:-30,text:'12/6 半馬目標 6:23→'+Math.round(regL.slope*HMP_PACE+regL.intercept)+'bpm',showarrow:true,arrowcolor:'#ff9f0a',font:{color:'#ff9f0a',size:10,family:'-apple-system'},bgcolor:'rgba(28,28,30,0.9)',bordercolor:'#ff9f0a',borderpad:4}
+                    {x:HMP_PACE,y:regL.slope*HMP_PACE+regL.intercept,ax:-60,ay:-30,text:'10/25 半馬目標 6:23→'+Math.round(regL.slope*HMP_PACE+regL.intercept)+'bpm',showarrow:true,arrowcolor:'#ff9f0a',font:{color:'#ff9f0a',size:10,family:'-apple-system'},bgcolor:'rgba(28,28,30,0.9)',bordercolor:'#ff9f0a',borderpad:4}
                 ]
             }, chartConfig);
 
@@ -2128,7 +2157,7 @@
                 +'<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;"><span style="color:#8e8e93">心率下降</span><span style="color:#30d158;font-weight:700">-'+Math.round(drop)+' bpm</span></div>';
 
             document.getElementById('regStat3').innerHTML =
-                '<h3 style="color:#ff9f0a;margin-bottom:12px;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;">12/6 半馬配速預測（6:23）</h3>'
+                '<h3 style="color:#ff9f0a;margin-bottom:12px;font-size:13px;text-transform:uppercase;letter-spacing:0.5px;font-weight:700;">10/25 半馬配速預測（6:23）</h3>'
                 +'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px;"><span style="color:#8e8e93">預測心率</span><span style="color:#ff9f0a;font-weight:700">'+Math.round(predHrHMP)+'-'+Math.round(predHrHMP+5)+' bpm</span></div>'
                 +'<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px;"><span style="color:#8e8e93">所屬區間</span><span style="color:#fff">'+(predHrHMP>170?'Zone 5（過載⚠️）':predHrHMP>160?'Zone 4（半馬可持續）':'Zone 3（輕鬆）')+'</span></div>'
                 +'<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;"><span style="color:#8e8e93">距 sub-2:15</span><span style="color:'+(predHrHMP<170?'#30d158':'#ff453a')+';font-weight:700">'+(predHrHMP<165?'極可行':predHrHMP<170?'有戲':'需更多訓練')+'</span></div>';
@@ -2140,7 +2169,7 @@
                 +'下降了 <span style="color:#30d158;font-weight:600">'+Math.round(drop)+' bpm</span>（約每月 '+(drop/totalDays*30).toFixed(1)+' bpm）— 有氧基礎持續增厚。<br><br>'
                 +'3D 回歸時間係數 <span style="color:#0a84ff;font-weight:600">'+regM.b.toFixed(4)+' bpm/天</span>，'
                 +'每訓練一天，同配速心率降低 '+Math.abs(regM.b).toFixed(2)+' bpm。<br><br>'
-                +'以 12/6 半馬目標配速 <span style="color:#ff9f0a;font-weight:600">6:23/km</span> 預測，心率約 <span style="color:#ff9f0a;font-weight:700">'+Math.round(predHrHMP)+'-'+Math.round(predHrHMP+5)+' bpm</span>。'
+                +'以 10/25 半馬目標配速 <span style="color:#ff9f0a;font-weight:600">6:23/km</span> 預測，心率約 <span style="color:#ff9f0a;font-weight:700">'+Math.round(predHrHMP)+'-'+Math.round(predHrHMP+5)+' bpm</span>。'
                 +(predHrHMP<165
                     ? '<br><br>✅ 心率落在 Zone 3-4，<span style="color:#30d158;font-weight:700">sub-2:15 目標非常可行</span>，21K 全程可維持。'
                     : predHrHMP<170
