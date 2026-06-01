@@ -1563,11 +1563,17 @@
         // 步頻圖
         Plotly.newPlot('cadenceChart', [{
             x: mechanicsDates,
-            y: cadence,
+            y: cadence.map(c => Number(c)),
             type: 'bar',
             marker: { color: '#0a84ff', borderRadius: 4 },
             hovertemplate: '%{x}<br>步頻: %{y} spm<extra></extra>'
-        }], {...darkLayout, height: 220}, chartConfig);
+        }], {
+            ...darkLayout,
+            height: 220,
+            bargap: 0.2,
+            barmode: 'group',
+            yaxis: { ...darkLayout.yaxis, range: [120, 190] }
+        }, chartConfig);
 
         // 垂直振幅圖
         Plotly.newPlot('verticalOscillationChart', [{
