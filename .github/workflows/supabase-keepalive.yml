@@ -1,0 +1,52 @@
+name: supabase-keepalive
+
+# Supabase 免費專案閒置 7 天會自動暫停（2026-08 已被暫停過一次）。
+# 每天打一次真正的 SELECT 讓專案保持活躍；順便當健康監測——
+# 回傳不是 200 就讓 workflow 失敗，GitHub 會寄信通知。
+on:
+  schedule:
+    - cron: '0 4 * * *'   # 每天 04:00 UTC = 12:00 台北
+  workflow_dispatch:       # 也可以手動觸發測試
+
+permissions:
+  contents: write
+
+concurrency:
+  group: supabase-keepalive
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # anon key 是公開金鑰（dashboard 前端本來就帶著它），可以放這裡。
+      # ⚠️ 絕對不要把 service_role key 放進這個 public repo。
+      - name: Ping Supabase
+        env:
+          SUPABASE_URL: https://shbglvknbzczzougqhko.supabase.co
+          SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNoYmdsdmtuYnpjenpvdWdxaGtvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcyNzIyNTIsImV4cCI6MjA5Mjg0ODI1Mn0.bjIRVwVn-OP6SSTKW_Osh8Om9YUzolwZYl0Pc6B_Qd4
+        run: |
+          set -euo pipefail
+          for table in runs weights training_plan; do
+            code=$(curl -sS -o /tmp/body.json -w '%{http_code}' \
+              "$SUPABASE_URL/rest/v1/$table?select=date&order=date.desc&limit=1" \
+              -H "apikey: $SUPABASE_ANON_KEY" \
+              -H "Authorization: Bearer $SUPABASE_ANON_KEY")
+            echo "$table -> HTTP $code $(cat /tmp/body.json)"
+            if [ "$code" != "200" ]; then
+              echo "::error::Supabase $table 回傳 $code — 專案可能被暫停或刪除，去 supabase.com 檢查"
+              exit 1
+            fi
+          done
+
+      - name: Update heartbeat
+        run: |
+          set -euo pipefail
+          date -u '+%Y-%m-%dT%H:%M:%SZ  supabase ok' > .github/last-keepalive.txt
+          git config user.name  'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .github/last-keepalive.txt
+          git diff --staged --quiet || git commit -m 'chore: supabase keepalive heartbeat'
+          git push
