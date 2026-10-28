@@ -683,6 +683,45 @@
             color: var(--text-tertiary);
             font-size: 12px;
         }
+
+        /* ============================================================
+           減脂進度（堅持天數）
+           ============================================================ */
+        .fl-tiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+        .fl-tile { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--r-md); padding: 14px 16px; }
+        .fl-tile .k { font-size: 13px; color: var(--text-secondary); }
+        .fl-tile .v { font-size: 30px; font-weight: 700; margin-top: 4px; line-height: 1.1; }
+        .fl-tile .v small { font-size: 15px; font-weight: 500; color: var(--text-secondary); }
+        .fl-bar { height: 10px; border-radius: 5px; background: var(--card-bg-elev); overflow: hidden; display: flex; gap: 2px; margin: 4px 0 6px; }
+        .fl-bar span { display: block; height: 100%; }
+        .fl-barlabel { font-size: 13px; color: var(--text-secondary); display: flex; justify-content: space-between; margin-bottom: 18px; }
+        .fl-legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; }
+        .fl-legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 5px; }
+        .fl-months { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+        @media (min-width: 760px) { .fl-months { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+        .fl-month { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--r-md); padding: 10px; min-width: 0; }
+        .fl-month h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; display: flex; justify-content: space-between; }
+        .fl-month h3 span { color: var(--text-secondary); font-weight: 500; }
+        .fl-wk, .fl-days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
+        .fl-wk div { font-size: 10px; color: var(--text-secondary); text-align: center; margin-bottom: 2px; }
+        .fl-day { aspect-ratio: 1; border-radius: 5px; font-size: 10px; display: flex; align-items: center; justify-content: center;
+            color: var(--text-secondary); background: var(--card-bg-elev); position: relative; }
+        .fl-day.blank { visibility: hidden; }
+        .fl-day.s-done { background: var(--accent-green); color: #000; font-weight: 700; }
+        .fl-day.s-partial { background: var(--accent-yellow); color: #000; font-weight: 700; }
+        .fl-day.s-missed { background: var(--text-tertiary); color: var(--text-primary); }
+        .fl-day.s-travel { background: var(--accent-blue); color: #fff; }
+        .fl-day.s-today { background: var(--card-bg-elev); color: var(--text-primary); font-weight: 700; }
+        .fl-day.today { outline: 2px solid var(--text-primary); outline-offset: 1px; }
+        .fl-day.ms::after { content: ""; position: absolute; top: 2px; right: 2px; width: 5px; height: 5px; border-radius: 50%;
+            background: var(--accent-orange); }
+        .fl-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--r-md); padding: 14px 16px; margin-top: 16px; }
+        .fl-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 8px; }
+        .fl-card li { list-style: none; font-size: 14px; color: var(--text-secondary); margin: 5px 0; }
+        .fl-card li b { color: var(--text-primary); }
+        .fl-rule { font-size: 12px; color: var(--text-secondary); line-height: 1.7; margin-top: 14px; }
+        #fl-tip { position: fixed; pointer-events: none; background: var(--card-bg-elev); color: var(--text-primary); border: 1px solid var(--card-border);
+            border-radius: 8px; padding: 6px 9px; font-size: 12px; display: none; z-index: 50; box-shadow: 0 6px 20px rgba(0,0,0,.4); }
     </style>
 </head>
 <body>
@@ -697,6 +736,7 @@
         <div class="tab-nav">
             <button class="tab-btn active" onclick="switchTab('training')">📊 訓練數據</button>
             <button class="tab-btn" onclick="switchTab('regression')">🔬 回歸分析</button>
+            <button class="tab-btn" onclick="switchTab('fatloss')">🔥 減脂進度</button>
         </div>
 
         <div id="tab-training" class="tab-content active">
@@ -1392,6 +1432,35 @@
             </div>
         </div><!-- end tab-regression -->
 
+        <div id="tab-fatloss" class="tab-content">
+            <div class="header" style="margin-bottom: 20px;">
+                <h1 style="font-size: 26px;">🔥 減脂堅持進度</h1>
+                <p id="fl-sub">2026/10/26 → 2027/5/31</p>
+            </div>
+            <div class="fl-tiles">
+                <div class="fl-tile"><div class="k">堅持天數</div><div class="v" id="fl-done">–</div></div>
+                <div class="fl-tile"><div class="k">目前連續</div><div class="v" id="fl-streak">–</div></div>
+                <div class="fl-tile"><div class="k">剩下</div><div class="v" id="fl-left">–</div></div>
+            </div>
+            <div class="fl-bar" id="fl-bar" role="img"></div>
+            <div class="fl-barlabel"><span id="fl-pct"></span><span>終點 5/31・80 kg</span></div>
+            <div class="fl-legend">
+                <span><i style="background:var(--accent-green)"></i>✓ 堅持</span>
+                <span><i style="background:var(--accent-yellow)"></i>△ 做到一半</span>
+                <span><i style="background:var(--text-tertiary)"></i>× 中斷</span>
+                <span><i style="background:var(--accent-blue)"></i>✈ 旅行（不算中斷）</span>
+                <span><i style="background:var(--card-bg-elev)"></i>還沒到</span>
+                <span><i style="background:var(--accent-orange);border-radius:50%"></i>里程碑</span>
+            </div>
+            <div class="fl-months" id="fl-months"></div>
+            <div class="fl-card">
+                <h3>里程碑</h3>
+                <ul id="fl-ms"></ul>
+            </div>
+            <p class="fl-rule">「堅持」＝三餐（早、午、晚）都有記錄，而且當天排定的散步／跑步／重訓有做到（休息日只看三餐）；只做到其中一項算「做到一半」。今天還沒結束，顯示為進行中。清邁旅行 11/7–11/14 不計入，也不會打斷連續天數。資料即時讀自 Supabase：meals、workouts、runs、training_plan。</p>
+            <div id="fl-tip"></div>
+        </div><!-- end tab-fatloss -->
+
         <div class="footer">
             <p>數據來源：Apple Health | 最後更新：2026-04-20</p>
         </div>
@@ -2036,6 +2105,142 @@
                 regressionRendered = true;
                 renderRegression();
             }
+            if (tab === 'fatloss' && !fatLossRendered) {
+                fatLossRendered = true;
+                renderFatLoss().catch(err => {
+                    console.error('fatloss error:', err);
+                    document.getElementById('fl-sub').textContent = '載入失敗：' + err.message;
+                });
+            }
+        }
+
+        // === 減脂進度（堅持天數）===
+        let fatLossRendered = false;
+        const FL_START = '2026-10-26', FL_END = '2027-05-31';
+        const FL_TRAVEL = ['2026-11-07', '2026-11-14'];
+        const FL_MILESTONES = [
+            ['2026-11-22', '四週回顧：比基準減 1.5–2 kg', '小獎勵'],
+            ['2026-12-31', '年底：約 85–86 kg', '中獎勵'],
+            ['2027-04-10', '雲林「突破BMI」10K（候選）', ''],
+            ['2027-05-31', '終點：約 80 kg', '大獎勵'],
+        ];
+        const FL_RUN_TYPES = ['easy', 'race', 'long', 'tempo', 'recovery'];
+
+        async function renderFatLoss() {
+            const [mealsRes, workoutsRes] = await Promise.all([
+                sb.from('meals').select('date, meal').gte('date', FL_START),
+                sb.from('workouts').select('date').gte('date', FL_START),
+            ]);
+            if (mealsRes.error) throw mealsRes.error;
+            if (workoutsRes.error) throw workoutsRes.error;
+
+            const mealsByDay = {};
+            mealsRes.data.forEach(r => {
+                if (['早餐', '午餐', '晚餐'].includes(r.meal)) (mealsByDay[r.date] ||= new Set()).add(r.meal);
+            });
+            const exDays = new Set([...workoutsRes.data.map(r => r.date), ...allRuns.map(r => r.date)]);
+            const planByDay = Object.fromEntries(allPlan.map(p => [p.date, p]));
+
+            const iso = d => d.toISOString().slice(0, 10);
+            const parse = s => new Date(s + 'T00:00:00Z');
+            const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Taipei' });
+            const days = [];
+            for (let d = parse(FL_START); d <= parse(FL_END); d = new Date(d.getTime() + 864e5)) days.push(iso(d));
+
+            // 這天有沒有排運動：有 training_plan 就看跑步類型／gym／散步；沒有就預設每天都有（散步或跑步）
+            function exercisePlanned(s) {
+                if (s === FL_START) return false; // 10/26 賽後休息，散步從 10/27 開始
+                const p = planByDay[s];
+                if (!p) return true;
+                return FL_RUN_TYPES.includes(p.workout_type) || !!p.gym || (p.notes || '').includes('🚶 晚上');
+            }
+            function stateOf(s) {
+                if (s >= FL_TRAVEL[0] && s <= FL_TRAVEL[1]) return 'travel';
+                if (s > today) return 'future';
+                const mealsOk = (mealsByDay[s]?.size || 0) >= 3;
+                const exOk = !exercisePlanned(s) || exDays.has(s);
+                if (mealsOk && exOk) return 'done';
+                if (s === today) return 'today';
+                return (mealsOk || exOk) ? 'partial' : 'missed';
+            }
+
+            const states = Object.fromEntries(days.map(s => [s, stateOf(s)]));
+            const total = days.length;
+            const past = days.filter(s => s <= today);
+            const doneN = past.filter(s => states[s] === 'done').length;
+            const partialN = past.filter(s => states[s] === 'partial').length;
+            let streak = 0;
+            for (let i = past.length - 1; i >= 0; i--) {
+                const st = states[past[i]];
+                if (st === 'done') streak++;
+                else if (st === 'travel' || st === 'today') continue;
+                else break;
+            }
+            const leftN = days.filter(s => s > today).length;
+
+            document.getElementById('fl-sub').textContent = `2026/10/26 → 2027/5/31・共 ${total} 天・今天是第 ${Math.max(1, past.length)} 天`;
+            document.getElementById('fl-done').innerHTML = `${doneN}<small> / ${total} 天</small>`;
+            document.getElementById('fl-streak').innerHTML = `${streak}<small> 天</small>`;
+            document.getElementById('fl-left').innerHTML = `${leftN}<small> 天</small>`;
+            document.getElementById('fl-pct').textContent = `已完成 ${(doneN / total * 100).toFixed(1)}%（${doneN}/${total}）`;
+            const bar = document.getElementById('fl-bar');
+            bar.setAttribute('aria-label', `堅持 ${doneN} 天，做到一半 ${partialN} 天，共 ${total} 天`);
+            [['--accent-green', doneN], ['--accent-yellow', partialN]].forEach(([c, n]) => {
+                if (!n) return;
+                const s = document.createElement('span');
+                s.style.width = (n / total * 100) + '%';
+                s.style.background = `var(${c})`;
+                bar.appendChild(s);
+            });
+
+            const msMap = new Map(FL_MILESTONES.map(m => [m[0], m]));
+            const LABEL = { done: '✓ 堅持', partial: '△ 做到一半', missed: '× 中斷', travel: '✈ 旅行', future: '還沒到', today: '今天進行中' };
+            const ICON = { done: '✓', partial: '△', missed: '×', travel: '✈' };
+            const WD = ['日', '一', '二', '三', '四', '五', '六'];
+            const byMonth = {};
+            days.forEach(s => (byMonth[s.slice(0, 7)] ||= []).push(s));
+            const monthsEl = document.getElementById('fl-months');
+            Object.entries(byMonth).forEach(([ym, list]) => {
+                const [y, m] = ym.split('-').map(Number);
+                const md = list.filter(s => states[s] === 'done').length;
+                const box = document.createElement('div');
+                box.className = 'fl-month';
+                box.innerHTML = `<h3>${y === 2027 ? '2027 ' : ''}${m} 月<span>${md}/${list.length}</span></h3>`
+                    + `<div class="fl-wk">${WD.map(w => `<div>${w}</div>`).join('')}</div>`;
+                const grid = document.createElement('div');
+                grid.className = 'fl-days';
+                const blanks = parse(`${ym}-01`).getUTCDay() + parse(list[0]).getUTCDate() - 1;
+                for (let i = 0; i < blanks; i++) grid.insertAdjacentHTML('beforeend', '<div class="fl-day blank"></div>');
+                list.forEach(s => {
+                    const st = states[s];
+                    const dnum = Number(s.slice(8));
+                    const c = document.createElement('div');
+                    c.className = `fl-day s-${st}` + (s === today ? ' today' : '') + (msMap.has(s) ? ' ms' : '');
+                    c.textContent = ICON[st] || dnum;
+                    let tip = `${m}/${dnum}（第 ${days.indexOf(s) + 1} 天）・${LABEL[st]}`;
+                    if (msMap.has(s)) tip += `<br>● ${msMap.get(s)[1]}`;
+                    c.dataset.tip = tip;
+                    c.setAttribute('aria-label', tip.replace('<br>', '，'));
+                    grid.appendChild(c);
+                });
+                box.appendChild(grid);
+                monthsEl.appendChild(box);
+            });
+
+            document.getElementById('fl-ms').innerHTML = FL_MILESTONES.map(([d, t, r]) => {
+                const left = days.filter(s => s > today && s <= d).length;
+                return `<li><b>${d.slice(5).replace('-', '/')}</b>　${t}${r ? `（${r}）` : ''}　<span style="color:var(--text-secondary)">還有 ${left} 天</span></li>`;
+            }).join('');
+
+            const tipEl = document.getElementById('fl-tip');
+            document.getElementById('tab-fatloss').addEventListener('pointermove', e => {
+                const t = e.target.closest('.fl-day[data-tip]');
+                if (!t) { tipEl.style.display = 'none'; return; }
+                tipEl.innerHTML = t.dataset.tip;
+                tipEl.style.display = 'block';
+                tipEl.style.left = Math.min(e.clientX + 12, innerWidth - tipEl.offsetWidth - 8) + 'px';
+                tipEl.style.top = (e.clientY + 14) + 'px';
+            });
         }
 
         // === 回歸分析 ===
